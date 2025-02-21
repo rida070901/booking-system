@@ -1,0 +1,112 @@
+<div class="modal fade show d-block" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        @if(onEdit) {
+          <h5 class="modal-title">EDIT ROOM DETAILS</h5>
+        }
+        @if(onNew) {
+          <h5 class="modal-title">ADD NEW ROOM</h5>
+        }
+        <button type="button" class="btn-close" (click)="onCloseModal()"></button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="roomForm" class="p-4 rounded" style="background: #e9ecef;">
+          @if(onEdit) {
+            <h2 class="text-center text-dark">{{ roomName }}</h2>
+          }
+          @if(onNew) {
+            <h2 class="text-center text-dark">Fill the details</h2>
+          }
+
+          <div class="mb-3">
+            @if(onEdit) {
+              <label for="id" class="form-label">ID</label>
+              <input id="id" type="number" [formControl]="roomForm.controls.id" readonly class="form-control" />
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input id="name" type="text" formControlName="name" class="form-control"
+                   [class.is-invalid]="roomForm.controls.name.invalid && roomForm.controls.name.touched" />
+            @if(roomForm.controls.name.invalid && roomForm.controls.name.touched) {
+              <div class="text-danger small mt-1">
+                @if(roomForm.controls.name.errors?.['required']) { <small>Name is required.</small> }
+                @if(roomForm.controls.name.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" formControlName="description" class="form-control"
+                      [class.is-invalid]="roomForm.controls.description.invalid && roomForm.controls.description.touched"></textarea>
+            @if(roomForm.controls.description.invalid && roomForm.controls.description.touched) {
+              <div class="text-danger small mt-1">
+                @if(roomForm.controls.description.errors?.['required']) { <small>Description is required.</small> }
+                @if(roomForm.controls.description.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="price" class="form-label">Price per day</label>
+            <input id="price" type="number" formControlName="price" class="form-control"
+                   [class.is-invalid]="roomForm.controls.price.invalid && roomForm.controls.price.touched" />
+          </div>
+
+          <div class="mb-3">
+            <label for="beds" class="form-label">Number of beds</label>
+            <input id="beds" type="number" formControlName="numberOfBeds" class="form-control"
+                   [class.is-invalid]="roomForm.controls.numberOfBeds.invalid && roomForm.controls.numberOfBeds.touched" />
+          </div>
+
+          <div class="mb-3">
+            <p class="form-label">Amenities</p>
+            @for (amenity of amenitiesList; track amenity.value) {
+              <input type="checkbox" autocomplete="off" class="btn-check" [id]="'check-'+amenity.value"
+                     [value]="amenity.value"
+                     (change)="onAmenityChange($event, amenity.value)"
+                     [checked]="roomForm.controls.amenities.value?.includes(amenity.value) ?? false" />
+              <label class="btn btn-outline-secondary ms-2 mb-2" [for]="'check-'+amenity.value">
+                {{ amenity.label }}
+              </label>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="image" class="form-label">Image</label>
+            <input id="image" type="file" accept="image/jpeg" class="form-control" (change)="onFileSelected($event)"
+                   [class.is-invalid]="roomForm.controls.image.invalid && roomForm.controls.image.touched" />
+            @if(roomForm.controls.image.invalid && roomForm.controls.image.touched) {
+              <div class="text-danger small mt-1">
+                @if(roomForm.controls.description.errors?.['required']) { <small>Image is required.</small> }
+              </div>
+            }
+            @if(imagePreview) {
+              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded mt-2" />
+            }
+          </div>
+
+          @if((submitErrorMsg || submitErrorMsg) && roomForm.invalid) {
+            <div class="alert alert-danger text-center">
+              Please fill out all required fields correctly!
+            </div>
+          }
+
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" (click)="onCloseModal()">Cancel</button>
+            @if(onEdit) {
+              <button type="button" class="btn btn-success" (click)="onSave(true)">Save</button>
+            }
+            @if(onNew) {
+              <button type="button" class="btn btn-success" (click)="onSubmit(true)">Submit</button>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

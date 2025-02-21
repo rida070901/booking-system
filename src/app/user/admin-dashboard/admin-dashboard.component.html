@@ -1,0 +1,13 @@
+<!-- <app-navbar></app-navbar>
+<app-sidebar-menu></app-sidebar-menu>
+<router-outlet></router-outlet> -->
+
+<app-navbar [darkMode]="true" [homeText]="true" [fixed]="true"></app-navbar>
+<div class="d-flex">
+  <div class="sidebar-content">
+    <app-sidebar-menu></app-sidebar-menu>
+  </div>
+  <div class="content flex-grow-1 p-3 main-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

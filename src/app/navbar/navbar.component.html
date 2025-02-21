@@ -1,0 +1,68 @@
+<nav class="navbar navbar-expand-lg" [ngClass]="{ 'navbar-dark bg-dark': darkMode(), 'navbar-light bg-transparent': !darkMode(), 'fixed-top': fixed() }">
+  <div class="container px-0">
+
+    @if(homeText()) {
+      <a class="navbar-brand text-white fs-4" [routerLink]="['/home']" >Home</a>
+    }
+
+    <!-- Navbar Toggler -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <!-- Dropdown Menus -->
+        @for (menu of [
+          { title: "Rooms & Suites", items: ["Rooms Classic", "Rooms Double", "Rooms Triple", "Rooms Quadruple", "Single Room", "Suite - Deluxe Room"] },
+          { title: "News", items: ["Latest Updates", "Travel Tips"] },
+          { title: "Pages", items: ["Gallery", "Services"] },
+          { title: "EUR", items: ["EUR", "USD"] }
+          ]; track menu.title) {
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">{{ menu.title }}</a>
+            <ul class="dropdown-menu">
+              @for (item of menu.items; track item) {
+                <li><a class="dropdown-item" href="#">{{ item }}</a></li>
+              }
+            </ul>
+          </li>
+        }
+
+        <div class="border-start border-light opacity-50 mx-3 d-none d-md-block" style="height: 40px;"></div>
+
+        <!-- Social Icon Links -->
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="bi bi-instagram"></i></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="bi bi-tiktok"></i></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="bi bi-facebook"></i></a>
+        </li>
+        @if(!islogged) {
+          <li class="nav-item">
+          <a class="nav-link" (click)="openLoginModal()"><i class="bi bi-box-arrow-in-right"></i></a> <!-- Login Icon -->
+          </li>
+        }
+        @else if(islogged) {
+          @if(isAdmin) {
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/admin']"><i class="bi bi-person"></i></a>
+            </li>
+          }
+          @else if(isUser) {
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/user/profile']"><i class="bi bi-person"></i></a>
+            </li>
+          }
+          <li class="nav-item">
+          <a class="nav-link" (click)="openLogoutModal()"><i class="bi bi-box-arrow-right"></i></a> <!-- Logout Icon -->
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</nav>

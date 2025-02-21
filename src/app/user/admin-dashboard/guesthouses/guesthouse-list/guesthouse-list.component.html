@@ -1,0 +1,110 @@
+
+<div class="guesthouse-list-content">
+
+  <div class="container-fluid manage-guesthouses-row">
+    <div class="row d-flex align-items-center">
+      <div class="col offset-md-1 ">
+        <button class="btn btn-outline-secondary" (click)="openNewGuesthouseModal()">+ New</button>
+      </div>
+      <div class="col menu-text">MANAGE GUESTHOUSES</div>
+      <div class="col">
+        <div class="input-group" (input)="onSearchGuesthouse()">
+          <button class="btn btn-outline-secondary">
+            <i class="bi bi-search"></i>
+          </button>
+          <input type="text" class="form-control" placeholder="Search.." [(ngModel)]="search" >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if(isLoading) {
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-4 offset-md-4 text-center">Guesthouse data is loading, please be patient....</div>
+      </div>
+    </div>
+  }
+  @else {
+      <div class="container-fluid">
+        <!-- Guesthouse-Menu Rows -->
+        <div class="row d-flex align-items-center text-shadow">
+          <div class="col offset-md-1">
+            ID
+            <button class="btn btn-sm" type="button" (click)="sortById()" >
+              @if(idSort === 'asc') {
+                <i class="bi bi-arrow-down"></i>
+              }
+              @if (idSort === 'desc'){
+                <i class="bi bi-arrow-up"></i>
+              } @else if(idSort === undefined){
+                <i class="bi bi-arrow-down-up"></i>
+              }
+            </button>
+          </div>
+          <div class="col">
+            Rooms
+          </div>
+          <div class="col">
+            Name
+            <button class="btn btn-sm" type="button" (click)="sortByName()" >
+              @if(nameSort === 'asc') {
+                <i class="bi bi-arrow-down"></i>
+              }
+              @if (nameSort === 'desc'){
+                <i class="bi bi-arrow-up"></i>
+              } @else if(nameSort === undefined){
+                <i class="bi bi-arrow-down-up"></i>
+              }
+            </button>
+          </div>
+          <div class="col">
+            Description
+          </div>
+          <div class="col ms-4">
+            Actions
+          </div>
+        </div>
+        <hr class="my-3 line-shadow">
+        <!-- Guesthouse Rows -->
+        @for (g of filteredGuesthouses | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track g.id) {
+          <div class="row d-flex align-items-center guesthouse-row-item">
+            <div class="col offset-md-1">#{{ g.id }}</div>
+            <div class="col">
+              <button class="btn btn-outline-secondary" [routerLink]="['/admin/room/guesthouse', g.id]">
+                <i class="bi bi-door-open"></i>
+              </button>
+            </div>
+            <div class="col">{{ g.name }}</div>
+            <div class="col guesthouse-description">{{ g.description }}</div>
+            <div class="col ms-4">
+              <button class="btn btn-outline-success btn-sm rounded-circle" (click)="openEditModal(g)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-outline-danger btn-sm rounded-circle ms-2" (click)="openDeleteModal(g)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+          <hr class="my-3">
+        }
+        @empty {
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-4 offset-md-4 text-center">No guesthouses to show. Please add one.</div>
+            </div>
+          </div>
+        }
+      </div>
+      <!-- Pagination Controls -->
+      <div class="pagination-container">
+        <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
+        <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+          @for (option of perPageOptions; track option) {
+            <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
+          }
+        </select>
+      </div>
+  }
+
+</div>

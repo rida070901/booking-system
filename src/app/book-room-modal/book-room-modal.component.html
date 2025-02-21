@@ -1,0 +1,44 @@
+<div class="modal fade show d-block" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">Book Room: {{ roomName }}</h5>
+        <button type="button" class="btn-close" (click)="onCloseModal()"></button>
+      </div>
+
+      <div class="modal-body">
+        <form class="p-4 rounded" style="background: #e9ecef;">
+          <div class="mb-3">
+            <label class="form-label">Select Dates</label>
+            <input
+              type="text"
+              class="form-control"
+              bsDaterangepicker
+              [bsConfig]="datePickerConfig"
+              [datesDisabled]="datesDisabled"
+              (bsValueChange)="onDateChange($event)"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Days of Stay</label>
+            <input type="text" class="form-control" [value]="daysOfStay" readonly />
+          </div>
+
+            @if(showError) {
+              <div class="alert alert-danger">
+                Selected dates include unavailable days. Please choose different dates.
+              </div>
+            }
+
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" (click)="onCloseModal()">Cancel</button>
+            <button type="button" class="btn btn-success" [disabled]="dateError || selectedRange.length !== 2" (click)="onBookRoom()">
+              Book Now
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

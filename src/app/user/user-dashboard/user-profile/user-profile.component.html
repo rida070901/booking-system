@@ -1,0 +1,64 @@
+<div class="container-fluid">
+  <div class="bg-white p-4 shadow-sm rounded">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 class="fw-bold">Personal Details</h3>
+        <p class="text-muted mb-0">Update your info and find out how it's used.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    @if (isLoading) {
+      <div class="text-center mt-3">
+        <div class="spinner-border text-secondary" role="status"></div>
+      </div>
+    }
+
+    @else {
+      <form [formGroup]="userForm" class="p-4 rounded" style="background: #f8f9fa;" (ngSubmit)="onSubmit()">
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">Name</div>
+          <div class="col-md-7">
+            <input type="text" formControlName="firstName" class="form-control border-0 bg-white">
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">Lastname</div>
+          <div class="col-md-7">
+            <input type="text" formControlName="lastName" class="form-control border-0 bg-white">
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">Email address</div>
+          <div class="col-md-7">
+            <input type="email" formControlName="email" class="form-control border-0 bg-white">
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-3">Phone number</div>
+          <div class="col-md-7">
+            <input type="text" formControlName="phoneNumber" class="form-control border-0 bg-white">
+          </div>
+        </div>
+
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-dark btn-sm rounded-3 px-3" [disabled]="userForm.invalid || isLoading">
+            @if (isLoading) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span>Saving...</span>
+            } @else {
+              <span>Submit Changes</span>
+            }
+          </button>
+        </div>
+
+      </form>
+    }
+
+  </div>
+</div>

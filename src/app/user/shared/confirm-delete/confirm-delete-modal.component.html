@@ -1,0 +1,14 @@
+
+<div class="modal-header">
+  <h5 class="modal-title">Confirm</h5>
+  <button type="button" class="btn-close" (click)="onClose(false)"></button>
+</div>
+<div class="modal-body">
+  <i class="bi bi-file-earmark-x"></i>
+  Are you sure you want to delete "{{ name }}" ?
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="onClose(false)">Cancel</button>
+  <button type="button" class="btn btn-danger" (click)="onClose(true)">Delete</button>
+</div>
+

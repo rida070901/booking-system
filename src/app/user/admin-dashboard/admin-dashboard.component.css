@@ -1,0 +1,28 @@
+.content {
+  margin-left: 250px; /* Adjust margin to avoid overlapping with the sidebar */
+}
+
+.main-content {
+  margin-left: 250px; /* Default space for sidebar */
+  margin-top: 56px; /* Prevent overlap with navbar */
+  padding: 20px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* .sidebar-content {
+  padding-top: 20px;
+  left: 0;
+  top: 56px;
+  transition: transform 0.3s ease-in-out;
+  width: 250px;
+  height: 100vh;
+  background-color: #343a40;
+  position: fixed;
+  color: white;
+} */
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0; /* On small screens, content takes full width */
+  }
+}

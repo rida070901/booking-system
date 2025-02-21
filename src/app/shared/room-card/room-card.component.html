@@ -1,0 +1,38 @@
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+
+<div class="container p-4 shadow-sm bg-white" style="max-width: 670px; font-family: 'Poppins', sans-serif;">
+  <div class="row g-4">
+
+    <!-- Room Image (No Rounded Corners) -->
+    <div class="col-md-4">
+      <img [src]= "room().image" alt="Comfort Room" class="img-fluid" style="height: 220px; object-fit: cover;">
+    </div>
+
+    <!-- Room Details -->
+    <div class="col-md-5">
+      <h2 class="fs-4 text-dark mb-3">{{ room().name }}</h2>
+      <p class="text-muted small lh-lg">{{ room().description }}</p>
+
+      <ul class="list-unstyled small lh-lg">
+        <li class="text-muted mb-2"><i class="bi bi-arrows-expand me-2 text-secondary"></i> Number of beds: {{ room().numberOfBeds }}</li>
+        <li class="fw-semibold text-muted">Amenities:</li>
+        @for (amenity of getAmenities(); track amenity) {
+          <li><i class="bi bi-check-circle text-success me-2"></i> {{ amenity }}</li>
+        }
+        @empty {
+          <li class="text-muted">No amenities available</li>
+        }
+      </ul>
+    </div>
+
+    <!-- Price & Button -->
+    <div class="col-md-3 border-start ps-4 text-center d-flex flex-column justify-content-between">
+      <div class="text-start">
+        <p class="text-muted mb-1">Prices start at:</p>
+        <h3 class="fs-4 text-dark mb-4">${{ room().price }} <span class="fs-6 text-muted">/ per night</span></h3>
+      </div>
+      <button class="btn w-100 py-2 rounded-pill book-btn" (click)="onBook()">BOOK</button>
+    </div>
+
+  </div>
+</div>

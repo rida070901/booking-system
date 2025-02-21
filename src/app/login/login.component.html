@@ -1,0 +1,37 @@
+<!-- login-modal.component.html -->
+<div class="modal-header border-0 pb-1">
+  <h5 class="modal-title fw-semibold text-black">Login</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+</div>
+
+<div class="modal-body px-4">
+  <form [formGroup]="loginForm">
+    <div class="mb-3">
+      <label class="form-label text-black small">Email</label>
+      <input type="email" class="form-control form-control-sm bg-light border-0 rounded-3 text-black" formControlName="email" placeholder="enter email">
+      @if (loginForm.controls.email.touched && loginForm.controls.email.dirty && loginForm.controls.email.invalid) {
+        <div class="text-danger small mt-1">Please enter a valid email address.</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label text-black small fw-normal">Password</label>
+      <input type="password" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal" formControlName="password" placeholder="enter password">
+      @if (loginForm.controls.password.touched && loginForm.controls.password.dirty && loginForm.controls.password.invalid) {
+        <div class="text-danger small mt-1">Please enter a valid password.</div>
+      }
+    </div>
+
+    <div class="d-flex justify-content-end">
+      <button type="submit" class="btn btn-dark btn-sm rounded-3 px-3 d-flex align-items-center gap-2"
+      [disabled]="loginForm.invalid || isLoading" (click)="onLogin()">
+      @if (isLoading) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>Logging in...</span>
+      } @else {
+        <span>Login</span>
+      }
+    </button>
+    </div>
+  </form>
+</div>

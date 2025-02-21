@@ -1,0 +1,11 @@
+
+.book-btn {
+  background-color: #5a6872; /* Lighter gray-blue */
+  color: white;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.book-btn:hover {
+  background-color: #49545d; /* Slightly darker on hover */
+  transform: scale(1.05); /* Slight zoom effect */
+}

@@ -1,1 +1,127 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import 'ngx-toastr/toastr';
+
+
+body {
+  background-color: #efefef!important; /* kind of gray-white-ish bg */
+}
+
+.modal-dialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Take full height of the screen */
+  margin-top: 0 !important; /* Remove any top margin */
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px; /* You can adjust the width as needed */
+}
+
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Pagination Styles */
+
+.pagination-container {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+  justify-content: center; /* Horizontally center the items */
+  gap: 10px; /* Add some spacing between the elements */
+  margin-bottom: 20px; /* Space at the bottom */
+}
+
+.items-per-page-dropdown {
+  padding: 8px 12px;
+  background-color: #f1f1f1; /* Light gray background */
+  border: 1px solid #ccc; /* Gray border */
+  border-radius: 4px; /* Slightly rounded corners */
+  color: #333; /* Dark gray text */
+  font-size: 14px;
+  vertical-align: middle; /* Align with pagination controls */}
+
+.pagination-controls {
+  display: inline-block; /* Keep pagination controls in the same row */
+  color: gray;
+  border: 1px solid gray;
+  background-color: white;
+  border: 1px solid #ccc; /* Gray border */
+  border-radius: 4px; /* Rounded corners */
+  padding: 6px 6px;
+}
+
+.pagination-controls:hover {
+  color: #5e5555;
+}
+
+.toast-center-center {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.toast-success {
+  background-color: #4caf50 !important; /* Green background */
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  font-size: 1rem !important;
+  padding: 16px 24px !important;
+  text-align: center !important;
+}
+
+.toast-container .ngx-toastr {
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.toast-progress {
+  background-color: #fff !important;
+  height: 4px !important;
+  border-radius: 0 0 12px 12px;
+}
+
+.toast-error {
+  background-color: #f44336 !important; /* Red background for errors */
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  font-size: 1rem !important;
+  padding: 16px 24px !important;
+  text-align: center !important;
+}
+
+.toast-progress {
+  background-color: #fff !important;
+  height: 4px !important;
+  border-radius: 0 0 12px 12px;
+}
+
+
+.ngx-toastr {
+  animation: fadeIn 0.3s ease-in, fadeOut 0.3s ease-out 2.2s forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+

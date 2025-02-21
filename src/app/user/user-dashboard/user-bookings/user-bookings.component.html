@@ -1,0 +1,161 @@
+
+<div class="book-list-content">
+
+  <div class="container-fluid manage-book-row">
+    <div class="row d-flex align-items-center">
+      <div class="col menu-text">MY BOOKINGS</div>
+      <div class="col">
+        <div class="input-group">
+          <button class="btn book-btn me-2 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
+          <button class="btn btn-outline-secondary">
+            <i class="bi bi-search"></i>
+          </button>
+          <input type="text" class="form-control w-50" placeholder="Search by room name..." [(ngModel)]="search" (input)="onSearchBook()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if(isLoading){
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-4 offset-md-4 text-center">Book data is loading, please be patient....</div>
+      </div>
+    </div>
+  }
+  @else {
+    <div class="container-fluid">
+      <!-- Book-Menu Rows -->
+      <div class="row d-flex align-items-center text-shadow">
+        <div class="col id-col">
+          ID
+          <button class="btn btn-sm" type="button" (click)="sortById()">
+            @if(idSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (idSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(idSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Image
+        </div>
+        <div class="col">
+          Room
+          <button class="btn btn-sm" type="button" (click)="sortByRoomName()">
+            @if(roomNameSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (roomNameSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(roomNameSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Check in
+          <button class="btn btn-sm" type="button" (click)="sortByCheckin()">
+            @if(checkinSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (checkinSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(checkinSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Check out
+          <button class="btn btn-sm" type="button" (click)="sortByCheckout()">
+            @if(checkoutSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (checkoutSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(checkoutSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Total price
+          <button class="btn btn-sm" type="button" (click)="sortByTotalPrice()">
+            @if(priceSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (priceSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(priceSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col dropdown">
+          <button class="btn btn-light border-secondary text-secondary w-80" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          Status <i class="bi bi-filter"></i>
+        </button>
+        <ul class="dropdown-menu w-100" aria-labelledby="statusDropdown">
+          <li><a class="dropdown-item text-success" style="cursor: pointer;" (click)="filterByStatus('Active')">Active</a></li>
+          <li><a class="dropdown-item text-danger" style="cursor: pointer;" (click)="filterByStatus('Unactive')">Unactive</a></li>
+          <li><a class="dropdown-item text-warning" style="cursor: pointer;" (click)="filterByStatus('In Progress')">In Progress</a></li>
+        </ul>
+          <!-- <select #selectedStatus -- ugly browser blue styling
+            class="form-select bg-light border-secondary shadow-none"
+            style="appearance: none; -webkit-appearance: none; -moz-appearance: none; background-color: #f8f9fa; border-color: #adb5bd; outline: none;"
+            (change)="filterByStatus(selectedStatus.value)">
+              <option value="">Status</option>
+              <option value="Active">Active</option>
+              <option value="Unactive">Unactive</option>
+              <option value="In Progress">In Progress</option>
+          </select> -->
+        </div>
+      </div>
+      <hr class="my-3 line-shadow">
+      <!-- Book Rows -->
+      @for (b of filteredBooks | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track b.id) {
+        <div class="row d-flex align-items-center book-row-item">
+          <div class="col id-col">#{{ b.id > 99999 ? (b.id.toString() | slice:0:5) + '...' : b.id }}</div>
+          <div class="col">
+            <img [src]="b.room.image" alt="img" >
+          </div>
+          <div class="col">{{ b.room.name!.length > 8 ? (b.room.name | slice:0:8) + '...' : b.room.name }}</div>
+          <div class="col">{{ b.bookFrom | date:'MMM d, y' }}</div>
+          <div class="col">{{ b.bookTo | date:'MMM d, y' }}</div>
+          <div class="col">{{ getTotalPrice(b) | number: '1.0-2' }} $</div>
+          <div class="col">
+            <span class="status-badge" [ngClass]="{
+              'status-active': getBookingStatus(b) === 'Active',
+              'status-unactive': getBookingStatus(b) === 'Unactive',
+              'status-progress': getBookingStatus(b) === 'In Progress'
+            }">
+            {{ getBookingStatus(b) }}
+          </span>
+          </div>
+        </div>
+        <hr class="my-3">
+      }
+      @empty {
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-4 offset-md-4 text-center">No bookings to show. Please add one.</div>
+          </div>
+        </div>
+      }
+    </div>
+    <!-- Pagination Controls -->
+    <div class="pagination-container">
+      <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
+      <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+        @for (option of perPageOptions; track option) {
+          <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
+        }
+      </select>
+    </div>
+  }
+
+</div>

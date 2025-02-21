@@ -1,0 +1,121 @@
+<app-navbar [darkMode]="true" [homeText]="true"></app-navbar>
+
+<div class="container py-5">
+
+  <!-- Guesthouse Header -->
+  <div class="row align-items-center mb-4">
+    @if(isLoadingGuesthouse) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-secondary" role="status"></div>
+        <p class="mt-2 text-muted">Loading guesthouse...</p>
+      </div>
+    }
+    @else {
+      @if(guesthouse) {
+        <!-- Guesthouse Image -->
+        <div class="col-md-4 text-center text-md-start">
+          <img src="assets/images/guesthouse.PNG" alt="Seaside Guesthouse" class="img-fluid rounded-3" style="max-width: 100%; height: auto;">
+        </div>
+        <!-- Guesthouse Name & Description -->
+        <div class="col-md-8 text-center text-md-start">
+          <h1 class="fw-bold text-dark">Seaside Guesthouse</h1>
+          <!-- <p class="text-muted fs-5">Experience comfort and luxury with breathtaking ocean views.</p> -->
+          <!-- <button class="btn w-50 py-2 book-btn" (click)="showAvailableRooms()">Show available rooms only</button> -->
+          <div class="row justify-content-start">
+            <div class="col">
+              <app-home-search></app-home-search>
+            </div>
+          </div>
+        </div>
+      }
+      @else {
+        <div class="text-center text-danger">No guesthouse found.</div>
+      }
+    }
+  </div>
+
+  <hr class=" mx-auto mb-4">
+
+  <!-- Search & Filter Section -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+    <!-- Search Bar -->
+    <div class="input-group w-50">
+      <span class="input-group-text bg-light"><i class="bi bi-search text-secondary"></i></span>
+      <input
+        type="text"
+        class="form-control border-start-0 shadow-sm"
+        placeholder="Search rooms..."
+        #search
+        (input)="onSearchRoom(search.value)"
+      >
+    </div>
+
+    <!-- Filter Dropdown -->
+    <div class="dropdown">
+      <button class="btn book-btn me-2 px-4 py-2" (click)="showTop5Rooms()">Top 5 <i class="bi bi-star-fill text-warning"></i></button>
+      <button class="btn book-btn me-2 px-4 py-2" [class.active]="isAllRooms" (click)="showAllRooms()">{{ isAllRooms ? 'All rooms' : 'Show all rooms' }}</button>
+
+      <button class="btn btn-outline-secondary dropdown-toggle px-4 py-2" type="button" data-bs-toggle="dropdown">
+        <i class="bi bi-filter"></i> Filter by
+      </button>
+        <ul class="dropdown-menu">
+          <li>
+            <button class="dropdown-item" (click)="applyFilter('priceAsc')">
+              <i class="bi bi-arrow-down text-secondary"></i> Price: Low to High
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" (click)="applyFilter('priceDesc')">
+              <i class="bi bi-arrow-up text-secondary"></i> Price: High to Low
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" (click)="applyFilter('nameAsc')">
+              <i class="bi bi-star-fill text-secondary"></i> Name: A-Z
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" (click)="applyFilter('nameDesc')">
+              <i class="bi bi-star-fill text-secondary"></i> Name: Z-A
+            </button>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <button class="dropdown-item text-danger" (click)="applyFilter('')">
+              <i class="bi bi-x-circle"></i> Clear Filter
+            </button>
+          </li>
+        </ul>
+    </div>
+  </div>
+
+  <div class="row d-flex align-items-center">
+    @if(isLoadingRooms) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-secondary" role="status"></div>
+        <p class="mt-2 text-muted">Loading rooms...</p>
+      </div>
+    }
+    @else {
+      @if(isLoadingBookedDates) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-secondary" role="status"></div>
+          <p class="mt-2 text-muted">Loading booking...</p>
+        </div>
+      }
+      @else {
+        @for(room of filteredRooms; track room.id) {
+          <!-- Room-Card -->
+          <div class="col-md-12 mb-4">
+            <app-room-card [room]="room" (openBookModalEvent)="openBookModal(room)"></app-room-card>
+          </div>
+        }
+        @empty {
+          <div class="text-center text-danger">No rooms found.</div>
+        }
+      }
+    }
+  </div>
+</div>
+
+<app-footer></app-footer>

@@ -1,0 +1,26 @@
+<div class="modal-container">
+  <div class="modal-header bg-secondary text-white">
+    <h5 class="modal-title">User Details</h5>
+    <button type="button" class="btn-close text-white" (click)="onCloseModal()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="card bg-light border-secondary p-3">
+      <h4 class="text-center mb-3">{{ user.firstName }} {{ user.lastName }}</h4>
+
+      <div class="list-group">
+        <div class="list-group-item d-flex justify-content-between">
+          <strong>ID:</strong> <span>{{ user.id }}</span>
+        </div>
+        <div class="list-group-item d-flex justify-content-between">
+          <strong>Email:</strong> <span>{{ user.email }}</span>
+        </div>
+        <div class="list-group-item d-flex justify-content-between">
+          <strong>Phone Number:</strong> <span>{{ user.phoneNumber ?? 'N/A' }}</span>
+        </div>
+        <div class="list-group-item d-flex justify-content-between">
+          <strong>Role:</strong> <span>{{ user.role ?? 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

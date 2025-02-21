@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "https://booking-api.asystems.al",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

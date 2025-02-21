@@ -1,0 +1,39 @@
+
+/* Hero Section */
+.hero {
+  margin-top: 20px;
+  min-height: 350px;
+}
+
+.dot-img:hover {
+  transform: scale(1.2);
+}
+
+
+/* Carousel Styling */
+.carousel-item {
+  padding: 20px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  filter: invert(1);
+}
+
+/* Welcome/Amenities Section img Styling */
+.vh-60 {
+  height: 60vh !important;
+}
+
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .float-img {
+    width: 80px;
+    display: none;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+}

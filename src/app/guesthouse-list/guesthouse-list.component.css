@@ -1,0 +1,16 @@
+
+.container {
+  max-width: 1100px;
+}
+
+.book-btn {
+  background-color: #bbc3ca; /* Lighter gray-blue */
+  color: #363e44;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.book-btn:hover {
+  background-color: #49545d; /* Slightly darker on hover */
+  color: white;
+  transform: scale(1.01); /* Slight zoom effect */
+}

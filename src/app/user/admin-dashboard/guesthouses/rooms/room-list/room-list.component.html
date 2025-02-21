@@ -1,0 +1,141 @@
+
+<div class="room-list-content">
+
+  <div class="container-fluid manage-room-row">
+    <div class="row d-flex align-items-center">
+      <div class="col offset-md-1 ">
+        <button class="btn btn-outline-secondary" (click)="openNewRoomModal()">+ New</button>
+      </div>
+      <div class="col menu-text">MANAGE ROOMS</div>
+      <div class="col">
+        <div class="input-group">
+          <button class="btn btn-outline-secondary">
+            <i class="bi bi-search"></i>
+          </button>
+          <input type="text" class="form-control" placeholder="Search.." #search (input)="onSearchRoom(search.value)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  @if(isLoading){
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-4 offset-md-4 text-center">Room data is loading, please be patient....</div>
+      </div>
+    </div>
+  }
+  @else {
+    <div class="container-fluid">
+      <!-- Room-Menu Rows -->
+      <div class="row d-flex align-items-center text-shadow">
+        <div class="col id-col">
+          ID
+          <button class="btn btn-sm" type="button" (click)="sortById()">
+            @if(idSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (idSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(idSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Image
+        </div>
+        <div class="col">
+          Name
+          <button class="btn btn-sm" type="button" (click)="sortByName()">
+            @if(nameSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (nameSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(nameSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Guesthouse
+          <button class="btn btn-sm" type="button" (click)="sortByGuesthouseId()">
+            @if(guesthouseIdSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (guesthouseIdSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(guesthouseIdSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Description
+        </div>
+        <div class="col">
+          Price
+          <button class="btn btn-sm" type="button" (click)="sortByPrice()">
+            @if(priceSort === 'asc') {
+              <i class="bi bi-arrow-down"></i>
+            }
+            @if (priceSort === 'desc'){
+              <i class="bi bi-arrow-up"></i>
+            } @else if(priceSort === undefined){
+              <i class="bi bi-arrow-down-up"></i>
+            }
+          </button>
+        </div>
+        <div class="col">
+          Actions
+        </div>
+      </div>
+      <hr class="my-3 line-shadow">
+      <!-- Room Rows -->
+      @for (r of filteredRooms | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track r.id) {
+        <div class="row d-flex align-items-center room-row-item">
+          <div class="col id-col">#{{ r.id > 99999 ? (r.id.toString() | slice:0:5) + '...' : r.id }}</div>
+          <div class="col">
+            <img [src]="r.image" alt="img" >
+          </div>
+          <div class="col">{{ r.name }}</div>
+          <div class="col">{{ r.name }}</div>
+          <div class="col room-description">{{ r.description }}</div>
+          <div class="col">{{ r.price }} $/day</div>
+          <div class="col">
+            <button class="btn btn-outline-success btn-sm rounded-circle" (click)="openEditModal(r)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm rounded-circle ms-2" (click)="openDeleteModal(r)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        <hr class="my-3">
+      }
+      @empty {
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-4 offset-md-4 text-center">No rooms to show. Please add one.</div>
+          </div>
+        </div>
+      }
+    </div>
+    <!-- Pagination Controls -->
+    <div class="pagination-container">
+      <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
+      <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+        @for (option of perPageOptions; track option) {
+          <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
+        }
+      </select>
+    </div>
+  }
+
+</div>
+
+
+
+
