@@ -90,6 +90,7 @@ export class GuesthouseDetailsComponent implements OnInit{
       next: (data) => {
         this.rooms = data;
         this.filteredRooms = data;
+        if (this.selectedFilter) this.applyFilter(this.selectedFilter);
       },
       error: (err: Error) => {
         console.log(err);
@@ -111,6 +112,7 @@ export class GuesthouseDetailsComponent implements OnInit{
         console.log(data)
         this.rooms = data;
         this.filteredRooms = data;
+        if (this.selectedFilter) this.applyFilter(this.selectedFilter);
       },
       error: (err: Error) => {
         console.log(err);
@@ -227,23 +229,23 @@ export class GuesthouseDetailsComponent implements OnInit{
   applyFilter(filter: string) {
     this.selectedFilter = filter;
     if(this.rooms) {
-      switch (filter) {
-        case 'priceAsc':
-          this.filteredRooms = this.rooms.sort((a, b) => a.price - b.price);
-          break;
-        case 'priceDesc':
-          this.filteredRooms = this.rooms.sort((a, b) => b.price - a.price);
-          break;
-        case 'nameAsc':
-          this.filteredRooms = [...this.rooms].sort((a, b) => a.name!.localeCompare(b.name!));
-          break;
-        case 'nameDesc':
-          this.filteredRooms = [...this.rooms].sort((a, b) => b.name!.localeCompare(a.name!));
-          break;
-      }
+      this.filteredRooms = this.rooms.sort((a, b) => {
+        switch (filter) {
+          case 'nameAsc':
+            return a.name!.localeCompare(b.name!);
+          case 'nameDesc':
+            return b.name!.localeCompare(a.name!);
+          case 'priceAsc':
+            return a.price - b.price;
+          case 'priceDesc':
+            return b.price - a.price;
+          default:
+            return 0;
+        }
+      });
       this.updateQueryParams();
     } else {
-      console.log('No guesthouses found');
+      console.log('No rooms found');
     }
   }
 

@@ -24,7 +24,7 @@ export class RoomService {
       tap((rooms) =>
         rooms.forEach((room) => ( room.image = this.imgHeader + room.image ))
       ),
-      shareReplay(1) // cache-s the latest http response (since rooms rarely change)
+      shareReplay(1) // cache-s the latest http response (only when rooms rarely change)
       // ---> prevents multiple http calls if multiple subscribers request the data
       // ---> especially useful when loading the same data in different components
     );

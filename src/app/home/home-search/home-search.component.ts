@@ -57,6 +57,7 @@ export class HomeSearchComponent implements OnInit{
     console.log('clicked onSearch()');
     if (this.searchForm.valid) {
       const [checkIn, checkOut] = this.searchForm.value.dateRange as Date[];
+      console.log('date range:', this.searchForm.value.dateRange)
       this.searchParams = {
         checkIn: checkIn.toISOString().split('T')[0],
         checkOut: checkOut.toISOString().split('T')[0],
@@ -66,7 +67,7 @@ export class HomeSearchComponent implements OnInit{
       // route dynamically based on current url
       if (this.router.url === '/home') { //from home -> guesthouse-list
         this.router.navigate(['/guesthouses/all'], { queryParams: this.searchParams });
-      } else if (this.router.url.startsWith('/guesthouses/available')) {
+      } else if (this.router.url.startsWith('/guesthouses/all')) {
         this.router.navigate([], { //in guesthouse-list -> just reload the list
           relativeTo: this.route,
           queryParams: this.searchParams,

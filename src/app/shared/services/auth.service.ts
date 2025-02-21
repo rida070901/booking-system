@@ -66,6 +66,7 @@ export class AuthService {
   }
 
   register(request: RegisterRequest) {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/Register`, request);
+    console.log('inside authservice request with request data: ', request)
+    return this.http.post<LoginResponse>(`${this.baseUrl}${environment.endpoints.auth.register}`, request);
   }
 }

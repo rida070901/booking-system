@@ -60,6 +60,7 @@ export class GuesthouseListComponent implements OnInit{
         next: (data) => {
           this.guesthouses = data;
           this.filteredGuesthouses = data;
+          if (this.selectedFilter) this.applyFilter(this.selectedFilter);
         },
         error: (err) => console.log(err),
         complete: () => {
@@ -76,6 +77,7 @@ export class GuesthouseListComponent implements OnInit{
         next: (data) => {
           this.guesthouses = data;
           this.filteredGuesthouses = data;
+          if (this.selectedFilter) this.applyFilter(this.selectedFilter);
         },
         error: (err: Error) => {
           console.log(err);
@@ -132,26 +134,27 @@ export class GuesthouseListComponent implements OnInit{
 
     applyFilter(filter: string) {
       this.selectedFilter = filter;
-      if(this.guesthouses) {
-        switch (filter) {
-          case 'nameAsc':
-            this.filteredGuesthouses = [...this.guesthouses].sort((a, b) => a.name!.localeCompare(b.name!));
-            break;
-          case 'nameDesc':
-            this.filteredGuesthouses = [...this.guesthouses].sort((a, b) => b.name!.localeCompare(a.name!));
-            break;
-          case 'idAsc':
-            this.filteredGuesthouses = this.guesthouses.sort((a, b) => a.id - b.id);
-            break;
-          case 'idDesc':
-            this.filteredGuesthouses = this.guesthouses.sort((a, b) => b.id - a.id);
-            break;
-        }
+      if (this.guesthouses) {
+        this.filteredGuesthouses = this.guesthouses.sort((a, b) => {
+          switch (filter) {
+            case 'nameAsc':
+              return a.name!.localeCompare(b.name!);
+            case 'nameDesc':
+              return b.name!.localeCompare(a.name!);
+            case 'idAsc':
+              return a.id - b.id;
+            case 'idDesc':
+              return b.id - a.id;
+            default:
+              return 0;
+          }
+        });
         this.updateQueryParams();
       } else {
         console.log('No guesthouses found');
       }
     }
+
 
     private updateQueryParams() {
       this.router.navigate([], {
