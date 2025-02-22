@@ -1,26 +1,29 @@
 <div class="modal-header border-0 pb-1">
-  <h5 class="modal-title fw-semibold text-black">@if (isLoginMode) { Login } @else { Register }</h5>
+  <h5 class="modal-title fw-semibold text-black">
+    @if (isLoginMode) { Login } @else { Register }
+  </h5>
   <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
 </div>
 
-<div class="modal-body px-4">
-  <form [formGroup]="isLoginMode ? loginForm : registerForm">
+<div class="modal-body px-4" style="max-height: 550px; overflow-y: auto;">
+  @let form = isLoginMode ? loginForm : registerForm;
+  <form [formGroup]="form">
     @if (!isLoginMode) {
       <div class="mb-3">
         <label class="form-label text-black small fw-normal">Username</label>
         <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-          formControlName="username" placeholder="enter username">
-        @if ((registerForm.controls.username.touched || registerForm.controls.username.dirty || registerForm.controls.username.errors) &&
-             registerForm.controls.username.hasError('usernameTaken')) {
+               formControlName="username" placeholder="enter username">
+        @if (registerForm.controls.username.hasError('usernameTaken')) {
           <div class="text-danger small mt-1">Username is not available.</div>
+        } @else if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
+          <div class="text-danger small mt-1">Username is required.</div>
         }
       </div>
-
       <div class="row">
         <div class="col mb-3">
           <label class="form-label text-black small">First Name</label>
           <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black"
-            formControlName="firstName" placeholder="enter first name">
+                 formControlName="firstName" placeholder="enter first name">
           @if (registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid) {
             <div class="text-danger small mt-1">First name is required.</div>
           }
@@ -28,46 +31,44 @@
         <div class="col mb-3">
           <label class="form-label text-black small">Last Name</label>
           <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black"
-            formControlName="lastName" placeholder="enter last name">
+                 formControlName="lastName" placeholder="enter last name">
           @if (registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid) {
             <div class="text-danger small mt-1">Last name is required.</div>
           }
         </div>
       </div>
-
       <div class="mb-3">
         <label class="form-label text-black small">Phone Number</label>
         <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black"
-          formControlName="phoneNumber" placeholder="enter phone number">
-        @if (registerForm.controls.phoneNumber.touched && registerForm.controls.phoneNumber.invalid) {
+               formControlName="phoneNumber" placeholder="enter phone number">
+        @if (registerForm.controls.phoneNumber.hasError('pattern')) {
+          <div class="text-danger small mt-1">Enter a valid phone number.</div>
+        } @else if (registerForm.controls.phoneNumber.touched && registerForm.controls.phoneNumber.invalid) {
           <div class="text-danger small mt-1">Phone number is required.</div>
         }
       </div>
     }
 
-
     <div class="mb-3">
       <label class="form-label text-black small fw-normal">Email</label>
       <input type="email" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-        formControlName="email" placeholder="enter email">
-      @if ((registerForm.controls.email.touched || registerForm.controls.email.dirty || registerForm.controls.email.errors) &&
-           registerForm.controls.email.hasError('emailTaken')) {
+             formControlName="email" placeholder="enter email">
+      @if ((form.controls.email.touched || form.controls.email.dirty || form.controls.email.errors) &&
+           form.controls.email.hasError('emailTaken')) {
         <div class="text-danger small mt-1">Email address is already in use.</div>
+      } @else if (form.controls.email.touched && form.controls.email.invalid) {
+        <div class="text-danger small mt-1">Correct email is required.</div>
       }
     </div>
 
     <div class="mb-3">
       <label class="form-label text-black small fw-normal">Password</label>
       <input type="password" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-        formControlName="password" placeholder="enter password">
+             formControlName="password" placeholder="enter password">
 
-      @if ((isLoginMode ? loginForm : registerForm).controls.password.touched &&
-          (isLoginMode ? loginForm : registerForm).controls.password.invalid) {
-
+      @if (form.controls.password.touched && form.controls.password.invalid) {
         @if (isLoginMode) {
-          <div class="text-danger small mt-1">
-            Password is required (min 6 characters).
-          </div>
+          <div class="text-danger small mt-1">Password is required.</div>
         } @else {
           <div class="text-danger small mt-1">
             Password must contain:
@@ -83,13 +84,28 @@
       }
     </div>
 
+    @if (!isLoginMode) {
+      <div class="mb-3">
+        <label class="form-label text-black small fw-normal">Confirm Password</label>
+        <input type="password" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
+               formControlName="confirmPassword" placeholder="confirm password">
+               @if (registerForm.hasError('passwordsMismatch') && registerForm.get('confirmPassword')?.touched) {
+                <div class="text-danger small mt-1 mb-2">Passwords do not match.</div>
+              }
+      </div>
+    }
+
+    @if (loginForm.controls.email.hasError('invalidCredentials') && isLoginMode) {
+      <div class="text-danger small mt-1 mb-3">Invalid email or password.</div>
+    }
+
     <div class="d-flex justify-content-between">
       <button type="button" class="btn btn-outline-secondary btn-sm rounded-3 px-3" (click)="toggleMode()">
         @if (isLoginMode) { Create Account } @else { Back to Login }
       </button>
       <button type="submit" class="btn btn-dark btn-sm rounded-3 px-3 d-flex align-items-center gap-2"
-        [disabled]="(isLoginMode ? loginForm.invalid : registerForm.invalid) || isLoading"
-        (click)="isLoginMode ? onLogin() : onRegister()">
+              [disabled]="form.invalid || isLoading"
+              (click)="isLoginMode ? onLogin() : onRegister()">
         @if (isLoading) {
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           <span>@if (isLoginMode) { Logging in... } @else { Registering... }</span>

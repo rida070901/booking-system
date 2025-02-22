@@ -15,10 +15,7 @@
       <ul class="navbar-nav ms-auto">
         <!-- Dropdown Menus -->
         @for (menu of [
-          { title: "Rooms & Suites", items: ["Rooms Classic", "Rooms Double", "Rooms Triple", "Rooms Quadruple", "Single Room", "Suite - Deluxe Room"] },
-          { title: "News", items: ["Latest Updates", "Travel Tips"] },
-          { title: "Pages", items: ["Gallery", "Services"] },
-          { title: "EUR", items: ["EUR", "USD"] }
+          { title: "Our Rooms Types", items: ["Rooms Classic", "Rooms Double", "Rooms Triple", "Rooms Quadruple", "Single Room", "Suite - Deluxe Room"] },
           ]; track menu.title) {
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">{{ menu.title }}</a>
@@ -29,6 +26,9 @@
             </ul>
           </li>
         }
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/guesthouses/all']">Our guesthouses</a>
+        </li>
 
         <div class="border-start border-light opacity-50 mx-3 d-none d-md-block" style="height: 40px;"></div>
 

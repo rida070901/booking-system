@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { LoginResponse } from '../models/login-response.model';
+import { LoginRequest, LoginResponse } from '../models/login.model';
 import { RegisterRequest } from '../models/register-request.model';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -21,8 +21,8 @@ export class AuthService {
   private userId: string | null = null;
 
 
-  login(email: string, password: string) {
-    return this.http.post<LoginResponse>(`${this.baseUrl}${environment.endpoints.auth.login}`, { email, password });
+  login(request: LoginRequest) {
+    return this.http.post<LoginResponse>(`${this.baseUrl}${environment.endpoints.auth.login}`, request);
   }
 
   setToken(token: string) {
