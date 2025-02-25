@@ -12,6 +12,6 @@ export class SidebarMenuComponent {
 
   authService = inject(AuthService);
 
-  role = this.authService.getRole();
+  role = this.authService.userRole();
 
 }

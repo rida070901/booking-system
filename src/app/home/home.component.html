@@ -77,15 +77,15 @@
   <h2 class="text-center fw-bold">Our Top Guesthouses</h2>
   <div id="guesthouseCarousel" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-inner">
-      @if(isLoading) {
+      @if(isLoading()) {
         <div class="d-flex justify-content-center vh-50">
           <div class="spinner-border text-secondary" role="status"></div>
         </div>
       }
       @for (guesthouse of guesthouses; track guesthouse.id) {
-        <div class="carousel-item" [class.active]="guesthouse.id === guesthouses[0].id">
-          <div class="col-md-8 mx-auto">
-            <app-guesthouse-card [guesthouse]="guesthouse"></app-guesthouse-card>
+        <div class="carousel-item p-4" [class.active]="guesthouse.id === guesthouses[0].id">
+          <div class="d-flex justify-content-center w-100" >
+            <app-guesthouse-card [guesthouse]="guesthouse" style="width: 80%;"></app-guesthouse-card>
           </div>
         </div>
       } @empty {

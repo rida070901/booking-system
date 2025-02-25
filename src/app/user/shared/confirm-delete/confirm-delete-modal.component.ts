@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, input, signal } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
@@ -10,22 +10,14 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 })
 export class ConfirmDeleteModalComponent {
 
+  @Input() name!: string;
   private bsModalRef = inject(BsModalRef);
-  name: string = '';
-  confirm: boolean = false; //users choice -> confirm delete item
+  confirm = signal<boolean>(false); //users choice -> confirm delete item
 
   onClose(userChoice: boolean) {
-    this.confirm = userChoice;
+    this.confirm.set(userChoice);
     this.bsModalRef.hide();
   }
-
-  // shouldShake = false;
-  // onBackdropClick() {
-  //   this.shouldShake = true;
-  //   setTimeout(() => {
-  //     this.shouldShake = false;
-  //   }, 500);
-  // }
 
 
 }

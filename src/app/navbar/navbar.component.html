@@ -42,18 +42,18 @@
         <li class="nav-item">
           <a class="nav-link" href="#"><i class="bi bi-facebook"></i></a>
         </li>
-        @if(!islogged) {
+        @if(!islogged()) {
           <li class="nav-item">
           <a class="nav-link" (click)="openLoginModal()"><i class="bi bi-box-arrow-in-right"></i></a> <!-- Login Icon -->
           </li>
         }
-        @else if(islogged) {
-          @if(isAdmin) {
+        @else if(islogged()) {
+          @if(isAdmin()) {
             <li class="nav-item">
               <a class="nav-link" [routerLink]="['/admin']"><i class="bi bi-person"></i></a>
             </li>
           }
-          @else if(isUser) {
+          @else if(isUser()) {
             <li class="nav-item">
               <a class="nav-link" [routerLink]="['/user/profile']"><i class="bi bi-person"></i></a>
             </li>

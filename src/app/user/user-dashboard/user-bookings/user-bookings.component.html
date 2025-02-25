@@ -1,41 +1,41 @@
 
 <div class="book-list-content">
 
-  <div class="container-fluid manage-book-row">
+  <div class="container-fluid rounded shadow-sm p-3 my-3" style="background-color: #CFD8DC;">
     <div class="row d-flex align-items-center">
-      <div class="col menu-text">MY BOOKINGS</div>
+      <div class="col fw-bold text-shadow" style="font-size: 20px; color: #424242;">MY BOOKINGS</div>
       <div class="col">
         <div class="input-group">
           <button class="btn book-btn me-2 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
           <button class="btn btn-outline-secondary">
             <i class="bi bi-search"></i>
           </button>
-          <input type="text" class="form-control w-50" placeholder="Search by room name..." [(ngModel)]="search" (input)="onSearchBook()" />
+          <input type="text" class="form-control bg-secondary-subtle border-secondary" placeholder="Search by room name..." [(ngModel)]="search" (input)="onSearchBook()" />
         </div>
       </div>
     </div>
   </div>
 
-  @if(isLoading){
-    <div class="container-fluid">
+  @if(isLoading()){
+    <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
       <div class="row">
         <div class="col-md-4 offset-md-4 text-center">Book data is loading, please be patient....</div>
       </div>
     </div>
   }
   @else {
-    <div class="container-fluid">
+    <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
       <!-- Book-Menu Rows -->
-      <div class="row d-flex align-items-center text-shadow">
-        <div class="col id-col">
+      <div class="row d-flex align-items-center text-shadow py-2" style="font-size: 19px;">
+        <div class="col offset-md-1">
           ID
           <button class="btn btn-sm" type="button" (click)="sortById()">
-            @if(idSort === 'asc') {
+            @if(idSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (idSort === 'desc'){
+            @if (idSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(idSort === undefined){
+            } @else if(idSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -46,12 +46,12 @@
         <div class="col">
           Room
           <button class="btn btn-sm" type="button" (click)="sortByRoomName()">
-            @if(roomNameSort === 'asc') {
+            @if(roomNameSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (roomNameSort === 'desc'){
+            @if (roomNameSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(roomNameSort === undefined){
+            } @else if(roomNameSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -59,12 +59,12 @@
         <div class="col">
           Check in
           <button class="btn btn-sm" type="button" (click)="sortByCheckin()">
-            @if(checkinSort === 'asc') {
+            @if(checkinSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (checkinSort === 'desc'){
+            @if (checkinSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(checkinSort === undefined){
+            } @else if(checkinSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -72,12 +72,12 @@
         <div class="col">
           Check out
           <button class="btn btn-sm" type="button" (click)="sortByCheckout()">
-            @if(checkoutSort === 'asc') {
+            @if(checkoutSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (checkoutSort === 'desc'){
+            @if (checkoutSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(checkoutSort === undefined){
+            } @else if(checkoutSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -85,12 +85,12 @@
         <div class="col">
           Total price
           <button class="btn btn-sm" type="button" (click)="sortByTotalPrice()">
-            @if(priceSort === 'asc') {
+            @if(priceSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (priceSort === 'desc'){
+            @if (priceSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(priceSort === undefined){
+            } @else if(priceSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -104,22 +104,15 @@
           <li><a class="dropdown-item text-danger" style="cursor: pointer;" (click)="filterByStatus('Unactive')">Unactive</a></li>
           <li><a class="dropdown-item text-warning" style="cursor: pointer;" (click)="filterByStatus('In Progress')">In Progress</a></li>
         </ul>
-          <!-- <select #selectedStatus -- ugly browser blue styling
-            class="form-select bg-light border-secondary shadow-none"
-            style="appearance: none; -webkit-appearance: none; -moz-appearance: none; background-color: #f8f9fa; border-color: #adb5bd; outline: none;"
-            (change)="filterByStatus(selectedStatus.value)">
-              <option value="">Status</option>
-              <option value="Active">Active</option>
-              <option value="Unactive">Unactive</option>
-              <option value="In Progress">In Progress</option>
-          </select> -->
         </div>
       </div>
-      <hr class="my-3 line-shadow">
+
+      <hr class="my-3 shadow-sm" style="height: 3px; background-color: #333;">
+
       <!-- Book Rows -->
-      @for (b of filteredBooks | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track b.id) {
-        <div class="row d-flex align-items-center book-row-item">
-          <div class="col id-col">#{{ b.id > 99999 ? (b.id.toString() | slice:0:5) + '...' : b.id }}</div>
+      @for (b of filteredBooks | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track b.id) {
+        <div class="row d-flex align-items-center py-1">
+          <div class="col offset-md-1">#{{ b.id > 99999 ? (b.id.toString() | slice:0:5) + '...' : b.id }}</div>
           <div class="col">
             <img [src]="b.room.image" alt="img" >
           </div>
@@ -140,7 +133,7 @@
         <hr class="my-3">
       }
       @empty {
-        <div class="container-fluid">
+        <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
           <div class="row">
             <div class="col-md-4 offset-md-4 text-center">No bookings to show. Please add one.</div>
           </div>
@@ -148,13 +141,16 @@
       }
     </div>
     <!-- Pagination Controls -->
-    <div class="pagination-container">
-      <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
-      <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
-        @for (option of perPageOptions; track option) {
-          <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
-        }
-      </select>
+    <div class="d-flex justify-content-center align-items-center flex-wrap mt-4 pagination-container">
+      <pagination-controls (pageChange)="page = $event" class="pagination-controls mb-2"></pagination-controls>
+      <div class="d-flex align-items-center ms-3 mb-2">
+        <label class="me-2 text-secondary">Items per page:</label>
+        <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+          @for (option of perPageOptions; track option) {
+            <option [value]="option" [selected]="option === itemsPerPage()">{{ option }}</option>
+          }
+        </select>
+      </div>
     </div>
   }
 

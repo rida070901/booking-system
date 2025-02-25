@@ -1,4 +1,4 @@
-import { Component, inject} from '@angular/core';
+import { Component, inject, Input, OnInit, signal} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { CommonModule } from '@angular/common';
@@ -11,69 +11,73 @@ import { GuestHouseDto } from '../../../../shared/models/dto/guesthouse.dto';
   templateUrl: './guesthouse-details.component.html',
   styleUrl: './guesthouse-details.component.css'
 })
-export class GuesthouseDetailsComponent{
+export class GuesthouseDetailsComponent implements OnInit{
 
   private bsModalRef = inject(BsModalRef);
+  @Input() onEditMode!: boolean;
+  @Input() guesthouse!: GuestHouse;
 
-  onEdit: boolean = false;
-  onNew: boolean = false;
-  onSaveChanges: boolean = false;
-  onSubmitNew: boolean = false;
-  submitErrorMsg: boolean = false;
-
-  guesthouseName: string = '';
-  guesthouse: GuestHouse = {id:0, name:'',description:''};
+  updatedGuesthouse: GuestHouseDto = {name: '', description:''}
   newGuesthouse: GuestHouseDto = {name: '', description:''}
-  selectedImage: File | null = null;
-  imagePreview: string | ArrayBuffer | null = null;
+
+  onSubmitChanges = signal<boolean>(false);
+  onSubmitNew = signal<boolean>(false);
+  submitErrorMsg = signal<boolean>(false);
 
   guesthouseForm = new FormGroup({
     id: new FormControl(),
-    name: new FormControl('',{validators: [Validators.required, Validators.maxLength(20)]}),
-    description: new FormControl('',{validators: [Validators.required, Validators.maxLength(60)]}),
+    name: new FormControl('',{validators: [Validators.required, Validators.minLength(3), Validators.maxLength(20)]}),
+    description: new FormControl('',{validators: [Validators.required, Validators.minLength(10), Validators.maxLength(60)]}),
   });
+
+
+  ngOnInit() {
+    if (this.onEditMode && this.guesthouse) {
+      this.guesthouseForm.setValue({
+        id: this.guesthouse.id, //readonly
+        name: this.guesthouse.name!,
+        description: this.guesthouse.description!,
+      });
+    }
+  }
 
   onSave(onSave: boolean){
     if(this.guesthouseForm.invalid){
       console.log('INVALID FORM: form has empty or invalid fields');
-      this.submitErrorMsg = true;
+      this.submitErrorMsg.set(true);
       return;
     }
-    if (this.guesthouseForm.dirty) {
-      this.onSaveChanges = onSave;
-      this.guesthouse = structuredClone({ ...this.guesthouse, ...this.guesthouseForm.value });
-      //console.log('form was submitted! ',this.guesthouseForm.value);
-      //console.log('data passed from form: ',this.guesthouse);
+    if (JSON.stringify(this.guesthouseForm.getRawValue()) !== JSON.stringify(this.guesthouse)) {
+      this.onSubmitChanges.set(onSave);
+      this.updatedGuesthouse = this.guesthouseForm.getRawValue();
+      // console.log('this form was submitted!: ',this.guesthouseForm.value);
+      // console.log('data passed from form: ',this.guesthouse);
       this.onCloseModal();
     }
-    else if (this.guesthouseForm.pristine) {
-      //console.log('no data was editted, closing modal without sending PUT request to backend!')
+    else {
+      console.log('no data was editted, closing modal without sending PUT request to backend!')
       this.onCloseModal();
     }
   }
 
-  onSubmit(onSubmitNew: boolean) {
+  onSubmit(onNew: boolean) {
     if(this.guesthouseForm.invalid){
       console.log('INVALID FORM: form has empty or invalid fields');
-      this.submitErrorMsg = true;
+      this.submitErrorMsg.set(true);
       return;
     }
-    if(this.guesthouseForm.valid && this.guesthouseForm.controls.name.value!=null && this.guesthouseForm.controls.description.value!=null) {
-      this.onSubmitNew = onSubmitNew;
-      this.newGuesthouse = {
-        name: this.guesthouseForm.value.name!,
-        description: this.guesthouseForm.value.description!,
-      };
+    if(this.guesthouseForm.valid) {
+      this.onSubmitNew.set(onNew);
+      this.newGuesthouse = this.guesthouseForm.getRawValue();
     }
+    // console.log('this form was submitted!: ',this.guesthouseForm.value);
+    // console.log('data passed from form to new guesthouse: ',this.newGuesthouse);
     this.onCloseModal();
-    console.log('this form was submitted!: ',this.guesthouseForm.value);
-    console.log('data passed from form to new guesthouse: ',this.newGuesthouse);
   }
 
   onCloseModal() {
     this.bsModalRef.hide();
-    this.onEdit = false;
-    this.onNew = false;
+    this.onEditMode = false;
     this.guesthouseForm.reset();
   }
 

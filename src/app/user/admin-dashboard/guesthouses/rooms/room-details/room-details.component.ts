@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { CommonModule } from '@angular/common';
@@ -12,20 +12,20 @@ import { AmenitiesEnum } from '../../../../../shared/models/enums/amentities.enu
   templateUrl: './room-details.component.html',
   styleUrl: './room-details.component.css'
 })
-export class RoomDetailsComponent {
+export class RoomDetailsComponent implements OnInit{
 
   private bsModalRef = inject(BsModalRef);
+  @Input() onEditMode!: boolean;
+  @Input() room!: Room;
+  @Input() guesthouseId!: number;
 
-  onEdit: boolean = false;
-  onNew: boolean = false;
-  onSaveChanges: boolean = false;
-  onSubmitNew: boolean = false;
-  submitErrorMsg: boolean = false;
-
-  roomName: string = '';
-  guestHouseId: number = 0;
-  room: Room = {id:0, name:'',description:'', image:'', price: 0 ,numberOfBeds:0, guestHouseId: 0, amenities: []};
+  updatedRoom: RoomDto = {name:'',description:'', image:'', price: 0 ,numberOfBeds:0, guestHouseId: 0, amenities: []};
   newRoom: RoomDto = {name:'',description:'', image:'', price: 0 ,numberOfBeds:0, guestHouseId: 0, amenities: []};
+
+  onSubmitChanges = signal<boolean>(false);
+  onSubmitNew = signal<boolean>(false);
+  submitErrorMsg = signal<boolean>(false);
+
   imgHeader = 'data:image/jpeg;base64,';
   selectedImage: File | null = null;
   imagePreview: string | ArrayBuffer | null = null;
@@ -39,6 +39,20 @@ export class RoomDetailsComponent {
     numberOfBeds: new FormControl(0, {validators: [Validators.required]}),
     amenities: new FormControl<number[]>([]),
   });
+
+  ngOnInit() {
+    if (this.onEditMode && this.room) {
+      this.roomForm.patchValue({
+        id: this.room.id, //readonly
+        name: this.room.name!,
+        description: this.room.description!,
+        image: this.room.image!,
+        price: this.room.price!,
+        numberOfBeds: this.room.numberOfBeds!,
+        amenities: this.room.amenities!,
+      });
+    }
+  }
 
   amenitiesList = Object.entries(AmenitiesEnum)
   .filter(([key, value]) => !isNaN(Number(value))) // filters out reverse-mapped enum keys
@@ -62,26 +76,15 @@ export class RoomDetailsComponent {
   onSave(onSave: boolean){
     if(this.roomForm.invalid){
       console.log('INVALID FORM: form has empty or invalid fields');
-      this.submitErrorMsg = true;
+      this.submitErrorMsg.set(true);
       return;
     }
-    if (this.roomForm.dirty) {
-      this.onSaveChanges = onSave;
-      this.room = {
-        id: this.roomForm.value.id,
-        name: this.roomForm.value.name!,
-        description: this.roomForm.value.description!,
-        image: this.roomForm.value.image!,
-        price: this.roomForm.value.price!,
-        numberOfBeds: this.roomForm.value.numberOfBeds!,
-        guestHouseId: this.guestHouseId,
-        amenities: this.roomForm.value.amenities?.map(a => Number(a)) ?? [],
-      };
-      console.log('sending edited data: ', this.room)
+    if (JSON.stringify(this.roomForm.getRawValue()) !== JSON.stringify(this.room)) {
+      this.onSubmitChanges.set(onSave);
+      this.updatedRoom = this.roomForm.getRawValue();
       this.onCloseModal();
     }
-    else if (this.roomForm.pristine) {
-      //console.log('no data was editted, closing modal without sending PUT request to backend!')
+    else {
       this.onCloseModal();
     }
   }
@@ -100,15 +103,15 @@ onFileSelected(event: any) {
   }
 }
 
-onSubmit(onSubmitNew: boolean){
+onSubmit(onNew: boolean){
   if(this.roomForm.invalid){
     console.log('INVALID FORM: form has empty or invalid fields');
-    this.submitErrorMsg = true;
+    this.submitErrorMsg.set(true);
     return;
   }
   if(this.roomForm.valid) {
-    this.onSubmitNew = onSubmitNew;
-    //this.room = { ...this.room, ...this.roomForm.value } -need deep copy for emnities
+    this.onSubmitNew.set(onNew);
+    //this.room = { ...this.room, ...this.roomForm.value } -need deep copy for amenities?
     // if(this.roomForm.value.image!.startsWith(this.imgHeader)) {
     //   this.newRoom.image = this.roomForm.value.image!.slice(this.imgHeader.length);
     // }
@@ -116,21 +119,18 @@ onSubmit(onSubmitNew: boolean){
       name: this.roomForm.value.name!,
       description: this.roomForm.value.description!,
       image: this.roomForm.value.image!.startsWith(this.imgHeader) ? this.roomForm.value.image!.slice(this.imgHeader.length) : this.roomForm.value.image!,
-      // image: 'imgg',
       price: this.roomForm.value.price!,
       numberOfBeds: this.roomForm.value.numberOfBeds!,
-      guestHouseId: this.guestHouseId,
+      guestHouseId: this.room.guestHouseId,
       amenities: this.roomForm.value.amenities?.map(a => Number(a)) ?? [],
     };
-    // console.log('sending data: ', this.newRoom)
     this.onCloseModal();
   }
 }
 
 onCloseModal() {
   this.bsModalRef.hide();
-  this.onEdit = false;
-  this.onNew = false;
+  this.onEditMode = false;
   this.roomForm.reset();
 }
 

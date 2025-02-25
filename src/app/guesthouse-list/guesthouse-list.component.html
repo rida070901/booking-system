@@ -27,7 +27,7 @@
     <!-- Filter Dropdown -->
     <div class="dropdown">
       <button class="btn book-btn me-2 px-4 py-2" (click)="showTop5Guesthouses()">Top 5 <i class="bi bi-star-fill text-warning"></i></button>
-      <button class="btn book-btn me-2 px-4 py-2" [class.active]="isAllGuesthouses" (click)="showAllGuesthouses()">{{ isAllGuesthouses ? 'All guesthouses' : 'Show all guesthouses' }}</button>
+      <button class="btn book-btn me-2 px-4 py-2" [class.active]="isAllGuesthouses()" (click)="showAllGuesthouses()">{{ isAllGuesthouses() ? 'All guesthouses' : 'Show all guesthouses' }}</button>
       <button class="btn btn-outline-secondary dropdown-toggle px-4 py-2" type="button" data-bs-toggle="dropdown">
         <i class="bi bi-filter"></i> Filter by
       </button>
@@ -64,17 +64,16 @@
 
   <hr class="border-light opacity-50 my-5">
 
-
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="text-center py-5">
       <div class="spinner-border text-secondary" role="status"></div>
       <p class="mt-2 text-muted">Loading guesthouses...</p>
     </div>
   } @else {
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      @for (guesthouse of filteredGuesthouses | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track guesthouse.id) {
+      @for (guesthouse of filteredGuesthouses | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track guesthouse.id) {
         <div class="col">
-          <app-guesthouse-card [guesthouse]="guesthouse" [searchData]="queryParams"></app-guesthouse-card>
+          <app-guesthouse-card [guesthouse]="guesthouse" [queryParams]="queryParams"></app-guesthouse-card>
         </div>
       } @empty {
         <div class="text-center text-danger">No guesthouses found.</div>
@@ -84,13 +83,16 @@
   <hr class="border-light opacity-50 my-4">
 
   <!-- Pagination Controls -->
-  <div class="pagination-container">
-    <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
-    <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
-      @for (option of perPageOptions; track option) {
-        <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
-      }
-    </select>
+  <div class="d-flex justify-content-center align-items-center flex-wrap mt-4 pagination-container">
+    <pagination-controls (pageChange)="page = $event" class="pagination-controls mb-2"> </pagination-controls>
+    <div class="d-flex align-items-center ms-3 mb-2">
+      <label class="me-2 text-secondary">Items per page:</label>
+      <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+        @for (option of perPageOptions; track option) {
+          <option [value]="option" [selected]="option === itemsPerPage()">{{ option }}</option>
+        }
+      </select>
+    </div>
   </div>
 
 </div>

@@ -25,10 +25,6 @@ export const routes: Routes = [
     path: 'guesthouse/:id/rooms',
     component: GuesthouseDetailsComponent
   },
-  // {
-  //   path: 'login',
-  //   component: LoginComponent
-  // },
   {
     path: 'admin',
     component: AdminDashboardComponent,

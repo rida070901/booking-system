@@ -1,11 +1,8 @@
 
 
 export interface GuestHouseDto {
-  name?: string;
-  description?: string;
-  checkIn?: string;
-  checkOut?: string;
-  numberOfBeds?: number;
+  name?: string | null;
+  description?: string | null;
 }
 
 export interface GuestHouseParamsDto {

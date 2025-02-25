@@ -1,12 +1,12 @@
 import { AmenitiesEnum } from "../enums/amentities.enum";
 
 export interface RoomDto {
-  name?: string;
-  description?: string;
-  image?: string; // Base64 or URL
-  price?: number;
-  numberOfBeds?: number;
-  guestHouseId?: number;
+  name?: string | null;
+  description?: string | null;
+  image?: string | null; // Base64 or URL
+  price?: number | null;
+  numberOfBeds?: number | null;
+  guestHouseId?: number | null;
   amenities?: AmenitiesEnum[] | null;
 }
 

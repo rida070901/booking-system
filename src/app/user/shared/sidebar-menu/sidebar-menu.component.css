@@ -1,35 +1,15 @@
-
 .sidebar {
-  padding-top: 20px;
-  left: 0;
-  top: 65px;
   transition: transform 0.3s ease-in-out;
-  width: 250px;
-  height: 100vh;
-  background-color: #343a40;
-  position: fixed;
-  color: white;
 }
 
-.nav-link {
-  color: white;
-  padding: 10px 20px;
-  font-size:large;
-}
-
-.nav-link:hover {
+.nav-link:hover, .nav-item.active .nav-link {
   background-color: #495057;
-  border-radius: 5px;
-}
-
-.nav-item.active .nav-link {
-  background-color: #495057 !important;
   color: white !important;
-  border-radius: 5px;
 }
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 140px; /* Slightly smaller on small screens */
+    width: 140px;
+    top: 56px;
   }
 }

@@ -24,35 +24,19 @@ export class UserService {
     return this.http.put<UserDto>(`${this.baseUrl}${environment.endpoints.users.update(id)}`, user);
   }
 
-  sortById(users: User[], order: 'asc' | 'desc' | undefined) {
+  sortById(users: User[], order: 'asc' | 'desc' | null) {
     users.sort((a, b) => {
       const idA = a.id!.toLowerCase();
       const idB = b.id!.toLowerCase();
-      if (order === undefined) {
-        return idA > idB ? 1 : (idA < idB ? -1 : 0); // first -> ascending order
-      }
-      else if (order === 'desc') {
-        return idA > idB ? 1 : (idA < idB ? -1 : 0); // ascending order
-      }
-      else {
-        return idA < idB ? 1 : (idA > idB ? -1 : 0); // descending order
-      }
+      return (order === 'asc') ? (idB.localeCompare(idA)) : idA.localeCompare(idB);
     });
   }
 
-  sortByName(users: User[], order: 'asc' | 'desc' | undefined) {
+  sortByName(users: User[], order: 'asc' | 'desc' | null) {
     users.sort((a, b) => {
       const nameA = a.firstName!.toLowerCase();
       const nameB = b.firstName!.toLowerCase();
-      if (order === undefined) {
-        return nameA > nameB ? 1 : (nameA < nameB ? -1 : 0); // first -> ascending order
-      }
-      else if (order === 'desc') {
-        return nameA > nameB ? 1 : (nameA < nameB ? -1 : 0); // ascending order
-      }
-      else {
-        return nameA < nameB ? 1 : (nameA > nameB ? -1 : 0); // descending order
-      }
+      return (order === 'asc') ? (nameB.localeCompare(nameA)) : nameA.localeCompare(nameB);
     });
   }
 

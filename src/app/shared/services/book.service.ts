@@ -26,65 +26,39 @@ export class BookService {
     );
   }
 
-  sortById(guesthouses: Book[], order: 'asc' | 'desc' | undefined) {
-    guesthouses.sort((a, b) => {
-      if (order === 'desc') {
-        return a.id - b.id; // ascending if desc
-      } else {
-        return b.id - a.id; // descending if asc/undef
-      }
-  });
+  sortById(books: Book[], order: 'asc' | 'desc' | null) {
+    books.sort((a, b) => (order === 'desc' ? a.id - b.id : b.id - a.id));
   }
 
-  sortByTotalPrice(bookings: Book[], order: 'asc' | 'desc' | undefined) {
-    bookings.sort((a, b) => {
-      const totalPriceA = this.getTotalPrice(a);
-      const totalPriceB = this.getTotalPrice(b);
-      if (order === 'asc') {
-        return totalPriceB - totalPriceA; // descending if asc
-      } else {
-        return totalPriceA - totalPriceB; // ascending if desc/undef
-      }
-    });
-  }
-
-  sortByRoomName(books: Book[], order: 'asc' | 'desc' | undefined) {
+  sortByTotalPrice(books: Book[], order: 'asc' | 'desc' | null) {
     books.sort((a, b) => {
-      const nameA = a.room!.name!.toLowerCase();
-      const nameB = b.room!.name!.toLowerCase();
-      if (order === undefined) {
-        return nameA > nameB ? 1 : (nameA < nameB ? -1 : 0); // first -> ascending order
-      }
-      else if (order === 'desc') {
-        return nameA > nameB ? 1 : (nameA < nameB ? -1 : 0); // ascending order
-      }
-      else {
-        return nameA < nameB ? 1 : (nameA > nameB ? -1 : 0); // descending order
-      }
+      const totalA = this.getTotalPrice(a);
+      const totalB = this.getTotalPrice(b);
+      return order === 'asc' ? totalB - totalA : totalA - totalB;
     });
   }
 
-  sortByCheckIn(bookings: any[], order: 'asc' | 'desc' | undefined) {
-    bookings.sort((a, b) => {
-      const checkInA = new Date(a.bookFrom).getTime();
-      const checkInB = new Date(b.bookFrom).getTime();
-      if (order === 'asc') {
-        return checkInB - checkInA; // descending if desc
-      } else {
-        return checkInA - checkInB; // ascending if desc/undef
-      }
+  sortByRoomName(books: Book[], order: 'asc' | 'desc' | null) {
+    books.sort((a, b) => {
+      const nameA = a.room.name!.toLowerCase();
+      const nameB = b.room.name!.toLowerCase();
+      return (order === 'asc') ? (nameB.localeCompare(nameA)) : nameA.localeCompare(nameB);
     });
   }
 
-  sortByCheckOut(bookings: any[], order: 'asc' | 'desc' | undefined) {
-    bookings.sort((a, b) => {
-      const checkOutA = new Date(a.bookTo).getTime();
-      const checkOutB = new Date(b.bookTo).getTime();
-      if (order === 'asc') {
-        return checkOutB - checkOutA; // descending if desc
-      } else {
-        return checkOutA - checkOutB; // ascending if desc/undef
-      }
+  sortByCheckIn(books: Book[], order: 'asc' | 'desc' | null) {
+    books.sort((a, b) => {
+      const dateA = new Date(a.bookFrom).getTime();
+      const dateB = new Date(b.bookFrom).getTime();
+      return order === 'asc' ? dateB - dateA : dateA - dateB;
+    });
+  }
+
+  sortByCheckOut(books: Book[], order: 'asc' | 'desc' | null) {
+    books.sort((a, b) => {
+      const dateA = new Date(a.bookTo).getTime();
+      const dateB = new Date(b.bookTo).getTime();
+      return order === 'asc' ? dateB - dateA : dateA - dateB;
     });
   }
 

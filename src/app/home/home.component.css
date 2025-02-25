@@ -9,12 +9,6 @@
   transform: scale(1.2);
 }
 
-
-/* Carousel Styling */
-.carousel-item {
-  padding: 20px;
-}
-
 .carousel-control-prev,
 .carousel-control-next {
   filter: invert(1);

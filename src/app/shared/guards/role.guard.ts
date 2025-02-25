@@ -8,14 +8,14 @@ export const roleGuard: CanActivateFn = (route, _state) => {
   const router = inject(Router);
 
   const expectedRole = route.data['role']; //getting role from routes data.role
-  const role = authService.getRole();
+  const role = authService.userRole();
 
     if (role && role === expectedRole) {
       return true;
     } else {
       //TODO: error msg 'unauthorized route'
-      //router.navigate(['/login']); //redirect when role mismatch
       console.log('role.guard: UNAUTHORIZED')
+      router.navigate(['/home']); //redirect when role mismatch
       return false;
     }
 

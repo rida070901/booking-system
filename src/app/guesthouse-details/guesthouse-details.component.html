@@ -4,7 +4,7 @@
 
   <!-- Guesthouse Header -->
   <div class="row align-items-center mb-4">
-    @if(isLoadingGuesthouse) {
+    @if(isLoadingGuesthouse()) {
       <div class="text-center py-5">
         <div class="spinner-border text-secondary" role="status"></div>
         <p class="mt-2 text-muted">Loading guesthouse...</p>
@@ -18,7 +18,7 @@
         </div>
         <!-- Guesthouse Name & Description -->
         <div class="col-md-8 text-center text-md-start">
-          <h1 class="fw-bold text-dark">Seaside Guesthouse</h1>
+          <h1 class="fw-bold text-dark"> {{ guesthouse.name }} </h1>
           <!-- <p class="text-muted fs-5">Experience comfort and luxury with breathtaking ocean views.</p> -->
           <!-- <button class="btn w-50 py-2 book-btn" (click)="showAvailableRooms()">Show available rooms only</button> -->
           <div class="row justify-content-start">
@@ -52,8 +52,8 @@
 
     <!-- Filter Dropdown -->
     <div class="dropdown">
-      <button class="btn book-btn me-2 px-4 py-2" (click)="showTop5Rooms()">Top 5 <i class="bi bi-star-fill text-warning"></i></button>
-      <button class="btn book-btn me-2 px-4 py-2" [class.active]="isAllRooms" (click)="showAllRooms()">{{ isAllRooms ? 'All rooms' : 'Show all rooms' }}</button>
+      @if (isloggedIn()) { <button class="btn book-btn me-2 px-4 py-2" (click)="showTop5Rooms()">Top 5 <i class="bi bi-star-fill text-warning"></i></button> }
+      <button class="btn book-btn me-2 px-4 py-2" [class.active]="isAllRooms()" (click)="showAllRooms()">{{ isAllRooms() ? 'All rooms' : 'Show all rooms' }}</button>
 
       <button class="btn btn-outline-secondary dropdown-toggle px-4 py-2" type="button" data-bs-toggle="dropdown">
         <i class="bi bi-filter"></i> Filter by
@@ -90,14 +90,14 @@
   </div>
 
   <div class="row d-flex align-items-center">
-    @if(isLoadingRooms) {
+    @if(isLoadingRooms()) {
       <div class="text-center py-5">
         <div class="spinner-border text-secondary" role="status"></div>
         <p class="mt-2 text-muted">Loading rooms...</p>
       </div>
     }
     @else {
-      @if(isLoadingBookedDates) {
+      @if(isLoadingBookedDates()) {
         <div class="text-center py-5">
           <div class="spinner-border text-secondary" role="status"></div>
           <p class="mt-2 text-muted">Loading booking...</p>
@@ -107,7 +107,7 @@
         @for(room of filteredRooms; track room.id) {
           <!-- Room-Card -->
           <div class="col-md-12 mb-4">
-            <app-room-card [room]="room" (openBookModalEvent)="openBookModal(room)"></app-room-card>
+            <app-room-card [room]="room" (openBookModalEvent)="openBookModal(room.id!, room.name!)"></app-room-card>
           </div>
         }
         @empty {

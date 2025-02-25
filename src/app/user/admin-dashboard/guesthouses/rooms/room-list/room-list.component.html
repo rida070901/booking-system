@@ -1,44 +1,43 @@
-
 <div class="room-list-content">
 
-  <div class="container-fluid manage-room-row">
+  <div class="container-fluid rounded shadow-sm p-3 my-3" style="background-color: #CFD8DC;">
     <div class="row d-flex align-items-center">
-      <div class="col offset-md-1 ">
+      <div class="col">
         <button class="btn btn-outline-secondary" (click)="openNewRoomModal()">+ New</button>
+        <button class="btn book-btn ms-2 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
       </div>
-      <div class="col menu-text">MANAGE ROOMS</div>
+      <div class="col fw-bold text-shadow" style="font-size: 20px; color: #424242;">MANAGE ROOMS</div>
       <div class="col">
         <div class="input-group">
           <button class="btn btn-outline-secondary">
             <i class="bi bi-search"></i>
           </button>
-          <input type="text" class="form-control" placeholder="Search.." #search (input)="onSearchRoom(search.value)">
+          <input type="text" class="form-control bg-secondary-subtle border-secondary" placeholder="Search.." #search (input)="onSearchRoom(search.value)">
         </div>
       </div>
     </div>
   </div>
 
-
-  @if(isLoading){
-    <div class="container-fluid">
-      <div class="row">
+  @if(isLoading()){
+    <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
+      <div class="row py-2">
         <div class="col-md-4 offset-md-4 text-center">Room data is loading, please be patient....</div>
       </div>
     </div>
   }
   @else {
-    <div class="container-fluid">
+    <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
       <!-- Room-Menu Rows -->
-      <div class="row d-flex align-items-center text-shadow">
-        <div class="col id-col">
+      <div class="row d-flex align-items-center text-shadow py-2" style="font-size: 19px;">
+        <div class="col offset-md-1">
           ID
           <button class="btn btn-sm" type="button" (click)="sortById()">
-            @if(idSort === 'asc') {
+            @if(idSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (idSort === 'desc'){
+            @if (idSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(idSort === undefined){
+            } @else if(idSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -49,12 +48,12 @@
         <div class="col">
           Name
           <button class="btn btn-sm" type="button" (click)="sortByName()">
-            @if(nameSort === 'asc') {
+            @if(nameSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (nameSort === 'desc'){
+            @if (nameSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(nameSort === undefined){
+            } @else if(nameSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -62,12 +61,12 @@
         <div class="col">
           Guesthouse
           <button class="btn btn-sm" type="button" (click)="sortByGuesthouseId()">
-            @if(guesthouseIdSort === 'asc') {
+            @if(guesthouseIdSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (guesthouseIdSort === 'desc'){
+            @if (guesthouseIdSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(guesthouseIdSort === undefined){
+            } @else if(guesthouseIdSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -78,12 +77,12 @@
         <div class="col">
           Price
           <button class="btn btn-sm" type="button" (click)="sortByPrice()">
-            @if(priceSort === 'asc') {
+            @if(priceSort() === 'asc') {
               <i class="bi bi-arrow-down"></i>
             }
-            @if (priceSort === 'desc'){
+            @if (priceSort() === 'desc'){
               <i class="bi bi-arrow-up"></i>
-            } @else if(priceSort === undefined){
+            } @else if(priceSort() === null){
               <i class="bi bi-arrow-down-up"></i>
             }
           </button>
@@ -92,31 +91,41 @@
           Actions
         </div>
       </div>
-      <hr class="my-3 line-shadow">
+
+      <hr class="my-3 shadow-sm" style="height: 3px; background-color: #333;">
+
       <!-- Room Rows -->
-      @for (r of filteredRooms | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track r.id) {
-        <div class="row d-flex align-items-center room-row-item">
-          <div class="col id-col">#{{ r.id > 99999 ? (r.id.toString() | slice:0:5) + '...' : r.id }}</div>
+      @for (r of filteredRooms | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track r.id) {
+        <div class="row d-flex align-items-center py-1">
+          <div class="col offset-md-1">#{{ r.id > 99999 ? (r.id.toString() | slice:0:5) + '...' : r.id }}</div>
           <div class="col">
             <img [src]="r.image" alt="img" >
           </div>
-          <div class="col">{{ r.name }}</div>
-          <div class="col">{{ r.name }}</div>
-          <div class="col room-description">{{ r.description }}</div>
+          <div class="col">{{ r.name!.length > 10 ? (r.name | slice:0:10) + '...' : r.name }}</div>
+          <div class="col">{{ r.name!.length > 10 ? (r.name | slice:0:10) + '...' : r.name }}</div>
+          <div class="col">{{ r.description!.length > 15 ? (r.description | slice:0:15) + '...' : r.description }}</div>
           <div class="col">{{ r.price }} $/day</div>
           <div class="col">
-            <button class="btn btn-outline-success btn-sm rounded-circle" (click)="openEditModal(r)">
-              <i class="bi bi-pencil"></i>
+            <button class="btn btn-outline-success btn-sm rounded-circle" [disabled]="updatingId() === r.id" (click)="openEditModal(r)">
+              @if (updatingId() === r.id) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else {
+                <i class="bi bi-pencil"></i>
+              }
             </button>
-            <button class="btn btn-outline-danger btn-sm rounded-circle ms-2" (click)="openDeleteModal(r)">
-              <i class="bi bi-trash"></i>
+            <button class="btn btn-outline-danger btn-sm rounded-circle ms-2" [disabled]="deletingId() === r.id" (click)="openDeleteModal(r.id, r.name!)">
+              @if (deletingId() === r.id) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else {
+                <i class="bi bi-trash"></i>
+              }
             </button>
           </div>
         </div>
         <hr class="my-3">
       }
       @empty {
-        <div class="container-fluid">
+        <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
           <div class="row">
             <div class="col-md-4 offset-md-4 text-center">No rooms to show. Please add one.</div>
           </div>
@@ -124,13 +133,16 @@
       }
     </div>
     <!-- Pagination Controls -->
-    <div class="pagination-container">
-      <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
-      <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
-        @for (option of perPageOptions; track option) {
-          <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
-        }
-      </select>
+    <div class="d-flex justify-content-center align-items-center flex-wrap mt-4 pagination-container">
+      <pagination-controls (pageChange)="page = $event" class="pagination-controls mb-2"> </pagination-controls>
+      <div class="d-flex align-items-center ms-3 mb-2">
+        <label class="me-2 text-secondary">Items per page:</label>
+        <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+          @for (option of perPageOptions; track option) {
+            <option [value]="option" [selected]="option === itemsPerPage()">{{ option }}</option>
+          }
+        </select>
+      </div>
     </div>
   }
 

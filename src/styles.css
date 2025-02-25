@@ -1,10 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'ngx-toastr/toastr';
 
 
+html, body { height: 100%; }
 body {
   background-color: #efefef!important; /* kind of gray-white-ish bg */
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 .modal-dialog {
@@ -18,43 +19,6 @@ body {
 .modal-content {
   width: 100%;
   max-width: 500px; /* You can adjust the width as needed */
-}
-
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-/* Pagination Styles */
-
-.pagination-container {
-  display: flex;
-  align-items: center; /* Align items vertically in the center */
-  justify-content: center; /* Horizontally center the items */
-  gap: 10px; /* Add some spacing between the elements */
-  margin-bottom: 20px; /* Space at the bottom */
-}
-
-.items-per-page-dropdown {
-  padding: 8px 12px;
-  background-color: #f1f1f1; /* Light gray background */
-  border: 1px solid #ccc; /* Gray border */
-  border-radius: 4px; /* Slightly rounded corners */
-  color: #333; /* Dark gray text */
-  font-size: 14px;
-  vertical-align: middle; /* Align with pagination controls */}
-
-.pagination-controls {
-  display: inline-block; /* Keep pagination controls in the same row */
-  color: gray;
-  border: 1px solid gray;
-  background-color: white;
-  border: 1px solid #ccc; /* Gray border */
-  border-radius: 4px; /* Rounded corners */
-  padding: 6px 6px;
-}
-
-.pagination-controls:hover {
-  color: #5e5555;
 }
 
 .toast-center-center {
@@ -100,7 +64,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   border-radius: 0 0 12px 12px;
 }
 
-
 .ngx-toastr {
   animation: fadeIn 0.3s ease-in, fadeOut 0.3s ease-out 2.2s forwards;
 }
@@ -124,4 +87,45 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     opacity: 0;
   }
 }
+
+/* PAGINATION STYLING */
+
+.pagination-controls .ngx-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: gray;
+  background-color: white;
+  border: 1px solid #ccc; /* Gray border */
+  border-radius: 4px; /* Rounded corners */
+  padding: 6px 6px;
+}
+
+.pagination-controls .ngx-pagination .current {
+  background-color: #6c757d;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.pagination-controls .ngx-pagination li a:hover {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #343a40;
+}
+
+.items-per-page-dropdown {
+  padding: 8px 12px;
+  background-color: #f1f1f1; /* Light gray background */
+  border: 1px solid #ccc; /* Gray border */
+  border-radius: 4px; /* Slightly rounded corners */
+  color: #474747; /* Dark gray text */
+  font-size: 14px;
+}
+
+
 

@@ -1,82 +1,23 @@
-
-.container-fluid {
-  background-color: rgb(255, 255, 255);
-  margin: 0.7em 1px;
-  border-radius: 0.3rem;
-  box-shadow: rgba(0, 0, 0, 0.08) 0px 3px 10px;
-  padding: 16px;
-  border-radius: 4px;
-}
-
-.manage-room-row {
-  background-color: #CFD8DC;
-}
-
-.room-row-item {
-  max-height: 50px;
-}
-
-.room-description {
-  max-height: 50px;
-  overflow: hidden;
-  /* text-overflow: ellipsis; */
-  display: -webkit-box; /* Use the flexbox layout for multi-line */
-  -webkit-line-clamp: 2; /* Limit to 2 lines */
-  line-clamp: 2;
-  -webkit-box-orient: vertical; /* Ensure the box is oriented vertically */
-  word-wrap: break-word; /* Break words if necessary */
-  text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-  /* white-space: nowrap; */
-}
-
-.id-col {
-  position: relative;
-  left: 50px; /* Adjust how much you want to shift */
-}
-
 img {
   height: 54px;
   width: 80px;
-  border-radius: 5px;
   object-fit: cover;
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 8px;;
-  max-width: 100%;
-  max-height: 100%;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 8px;
+  border-radius: 5px;
 }
 
-.text-shadow {
-  font-size: 19px;
-  color: #333;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15); /* Horizontal, Vertical, Blur, Color */
-}
-
-.line-shadow {
-  border: none; /* Remove default border */
-  height: 3px; /* Line thickness */
-  background-color: #333; /* Line color */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Shadow with horizontal and vertical offsets, blur, and color */
-  margin: 20px 0; /* Spacing above and below the line */
-}
-
-.menu-text {
-  /* text-align: center; */
-  color: #424242;
-  font-size: 20px;
-  font-weight: bold;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); /* Shadow with horizontal and vertical offsets, blur, and color */
-}
-
-.form-control {
-  background-color: #CFD8DC;
-}
-
-.form-control:focus {
-  border-color: #9e9e9e;
-  outline-color: #CFD8DC;
-  outline-width: 2px;
-  outline-style: solid;
-}
-
-.bi-arrow-down-up:hover {
+.bi:hover {
   color: #B0BEC5;
+}
+
+.book-btn {
+  background-color: #bbc3ca; /* Lighter gray-blue */
+  color: #363e44;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.book-btn:hover {
+  background-color: #49545d; /* Slightly darker on hover */
+  color: white;
+  transform: scale(1.01); /* Slight zoom effect */
 }

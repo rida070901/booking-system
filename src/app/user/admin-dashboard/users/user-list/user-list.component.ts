@@ -8,7 +8,6 @@ import { User } from '../../../../shared/models/user.model';
 import { UserService } from '../../../../shared/services/user.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-
 @Component({
   selector: 'app-user-list',
   imports: [NgxPaginationModule, CommonModule],
@@ -22,37 +21,36 @@ export class UserListComponent implements OnInit{
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  //state variables
-  isLoading = true;
-
-  //search variables
+  //data holding objects
   private users: User[] = [];
   filteredUsers: User[] = [];
-  search = signal('');
+
+  //state variables
+  isLoading = signal<boolean>(false);
 
   // modal variables
   private modalService = inject(BsModalService);
   private modalRef?: BsModalRef;
 
   //sorting variables
-  idSort: 'asc' | 'desc' | undefined = undefined;
-  nameSort: 'asc' | 'desc' | undefined = undefined;
+  idSort = signal<'asc' | 'desc' | null>(null);
+  nameSort = signal<'asc' | 'desc' | null>(null);
 
   //pagination variables
   page: number = 1;
-  itemsPerPage: number = 5;
-  perPageOptions = [5, 8, 10, 20];
+  itemsPerPage = signal<number>(5);
+  perPageOptions = [6, 9, 12, 15];
 
   ngOnInit() {
     this.loadUsers();
-    this.router.navigate([], { //reset query params on reload
+    this.router.navigate([], {
       queryParams: {},
-      replaceUrl: true // prevents adding to browser history
+      replaceUrl: true
     });
   }
 
-
   private loadUsers() {
+    this.isLoading.set(true);
     this.userService.getAllUsers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.users = data;
@@ -62,15 +60,19 @@ export class UserListComponent implements OnInit{
         console.log(err);
       },
       complete: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     }
     );
   }
 
+  showRecentlyAdded() {
+    this.filteredUsers = this.users.sort((a, b) => b.id!.localeCompare(a.id!));
+  }
+
 
   onItemsPerPageChange(targetValue: string) {
-    this.itemsPerPage = Number(targetValue); // passing template var (#targetValue) as arg to this method in html
+    this.itemsPerPage.set(Number(targetValue)); // passing template var (#targetValue) as arg to this method in html
     this.page = 1;
   }
 
@@ -81,27 +83,27 @@ export class UserListComponent implements OnInit{
   }
 
   openDetailsModal(user: User) {
-    this.modalRef = this.modalService.show(UserDetailsComponent);
-    this.modalRef.content.user = user;
+    const modalOptions = {
+      backdrop: 'static' as const,
+      keyboard: false,
+      initialState: {
+        user: user,
+      }
+    };
+    this.modalRef = this.modalService.show(UserDetailsComponent, modalOptions);
   }
 
   sortById() {
-    this.userService.sortById(this.filteredUsers, this.idSort);
-    if(this.idSort === undefined){
-      this.idSort = 'asc';
-    } else {
-      this.idSort = this.idSort === 'asc' ? 'desc' : 'asc';
-    }
+    const currentSort = this.idSort();
+    this.userService.sortById(this.filteredUsers, currentSort);
+    this.idSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByName() {
-    this.userService.sortByName(this.filteredUsers, this.nameSort); //ascend if desc/undef & descend if asc
-    if(this.nameSort === undefined) {
-      this.nameSort = 'asc'; //ascending si first filter (just a preference)
-    } else {
-      this.nameSort = this.nameSort === 'asc' ? 'desc' : 'asc';
-    }
+    const currentSort = this.nameSort();
+    this.userService.sortByName(this.filteredUsers, currentSort);
+    this.nameSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
@@ -109,8 +111,8 @@ export class UserListComponent implements OnInit{
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        id: this.idSort,
-        name: this.nameSort,
+        id: this.idSort(),
+        name: this.nameSort(),
       },
       queryParamsHandling: 'merge' // merge with existing params
     });

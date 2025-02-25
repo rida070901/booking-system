@@ -49,11 +49,12 @@ export class LoginComponent {
     const loginData: LoginRequest = this.loginForm.value as LoginRequest;
     this.authService.login(loginData).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response: { token: string; id: string }) => {
-        this.authService.setToken(response.token);
-        this.authService.setUserId(response.id);
-        const role = this.authService.getRole();
-        this.router.navigate([role === 'Admin' ? '/admin' : '/user']);
+      next: (response) => {
+        const role = this.authService.userRole();
+        const redirectUrl = this.authService.getRedirectUrl();
+        this.authService.clearRedirectUrl();
+        //if redirectUrl exists go there -> else default to role-based route
+        this.router.navigate([redirectUrl ?? (role === 'Admin' ? '/admin' : '/user')]);
       },
       error: (err) => this.handleFormErrors(err, this.loginForm),
       complete: () => {
@@ -96,7 +97,7 @@ export class LoginComponent {
         form.controls['email'].setErrors({ emailTaken: true });
       }
     } else if (err.status === 401) {
-      form.controls['email'].setErrors({ invalidCredentials: true });
+      form.controls['password'].setErrors({ invalidCredentials: true });
     } else {
       console.error('Error: ', err.message ?? err);
     }

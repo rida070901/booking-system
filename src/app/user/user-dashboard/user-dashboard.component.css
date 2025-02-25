@@ -1,16 +1,5 @@
-.content {
-  margin-left: 250px;
-}
-
-.main-content {
-  margin-left: 250px;
-  margin-top: 56px;
-  padding: 20px;
-  transition: margin-left 0.3s ease-in-out;
-}
-
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
+  .sidebar-content {
+    display: none; /* Hide sidebar on small screens */
   }
 }

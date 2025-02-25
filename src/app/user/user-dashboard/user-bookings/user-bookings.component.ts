@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { Book } from '../../../shared/models/book.model';
 import { BookService } from '../../../shared/services/book.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,6 +6,8 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { CommonModule } from '@angular/common';
+import { takeUntil } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-user-bookings',
@@ -20,55 +22,54 @@ export class UserBookingsComponent implements OnInit{
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute); //to get query params (for the sorting)
   private router = inject(Router);
+
+  //data holding objects
   private userId = this.authService.getUserId();
-
-  //state variables
-  isLoading = true;
-
-  //sorting variables (me arrow posht/lart or both when undefined & query params)
-  idSort: 'asc' | 'desc' | undefined = undefined; //by default from recently added
-  roomNameSort: 'asc' | 'desc' | undefined = undefined;
-  checkinSort: 'asc' | 'desc' | undefined = undefined;
-  checkoutSort: 'asc' | 'desc' | undefined = undefined;
-  priceSort: 'asc' | 'desc' | undefined = undefined;
-
-  //pagination variables
-  page: number = 1; //current page
-  itemsPerPage: number = 5; // default
-  perPageOptions = [5, 8, 10, 20]; //dropdown options for user to choose
-
-  //search variables
-  search: string = '';
   private books: Book[] = [];
   filteredBooks: Book[] = [];
 
+  //state variables
+  isLoading = signal<boolean>(false);
+
+  //search variable
+  search = signal<string>('');
+
+  //sorting variables
+  idSort = signal<'asc' | 'desc' | null>(null);
+  roomNameSort = signal<'asc' | 'desc' | null>(null);
+  checkinSort = signal<'asc' | 'desc' | null>(null);
+  checkoutSort = signal<'asc' | 'desc' | null>(null);
+  priceSort = signal<'asc' | 'desc' | null>(null);
+
+  //pagination variables
+  page: number = 1;
+  itemsPerPage = signal<number>(5);
+  perPageOptions = [6, 9, 12, 15];
 
   ngOnInit() {
     this.loadBooks();
     this.router.navigate([], {
       queryParams: {},
-      replaceUrl: true // prevents adding to browser history
+      replaceUrl: true
     });
   }
 
   private loadBooks (){
+    this.isLoading.set(true);
     console.log(this.userId)
-    const sub = this.bookService.getBookingsByUser(this.userId!).subscribe({
+    this.bookService.getBookingsByUser(this.userId!).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.books = data;
         this.filteredBooks = data;
-        console.log(this.books)
-        console.log('resp: ', data)
       },
       error: (err: Error) => {
         console.log(err);
       },
       complete: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     }
     );
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
   showRecentlyAdded() {
@@ -76,59 +77,48 @@ export class UserBookingsComponent implements OnInit{
   }
 
   onItemsPerPageChange(targetValue: string) {
-    this.itemsPerPage = Number(targetValue);
+    this.itemsPerPage.set(Number(targetValue));
     this.page = 1;
   }
 
   onSearchBook() { //search by room name
-    if(!this.search) {
-      this.filteredBooks = [...this.books];
-      return;
-    }
     this.filteredBooks = this.books.filter(b =>
-      b.room?.name?.toLowerCase().includes(this.search.trim().toLowerCase())
+      b.room?.name?.toLowerCase().includes(this.search().trim().toLowerCase())
     );
   }
 
   sortById() {
-    this.bookService.sortById(this.filteredBooks, this.idSort); //ascend if desc & descend if asc/undef
-    if(this.idSort === undefined){ //undefined do jet vetem heren e par on reload cmp
-      this.idSort = 'desc'; //descending si first filter (just a preference)
-    } else {
-      this.idSort = this.idSort === 'asc' ? 'desc' : 'asc'; //update this.setOrderById
-    }
+    const currentSort = this.idSort();
+    this.bookService.sortById(this.filteredBooks, currentSort);
+    this.idSort.set(currentSort === null ? 'desc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByTotalPrice() {
-    this.bookService.sortByTotalPrice(this.filteredBooks, this.priceSort);
-    if (this.priceSort === undefined) {
-      this.priceSort = 'asc'; // ascending as default preference
-    } else {
-      this.priceSort = this.priceSort === 'asc' ? 'desc' : 'asc'; // toggle order
-    }
+    const currentSort = this.priceSort();
+    this.bookService.sortByTotalPrice(this.filteredBooks, currentSort);
+    this.priceSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByRoomName() {
-    this.bookService.sortByRoomName(this.filteredBooks, this.roomNameSort); //ascend if desc/undef & descend if asc
-    if(this.roomNameSort === undefined) { //undefined do jet vetem heren e par on reload cmp
-      this.roomNameSort = 'asc'; //ascending si first filter (just a preference)
-    } else {
-      this.roomNameSort = this.roomNameSort === 'asc' ? 'desc' : 'asc';
-    }
+    const currentSort = this.roomNameSort();
+    this.bookService.sortByRoomName(this.filteredBooks, currentSort);
+    this.roomNameSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByCheckin() {
-    this.bookService.sortByCheckIn(this.filteredBooks, this.checkinSort);
-    this.checkinSort = this.checkinSort === undefined ? 'asc' : this.checkinSort === 'asc' ? 'desc' : 'asc';
+    const currentSort = this.checkinSort();
+    this.bookService.sortByCheckIn(this.filteredBooks, currentSort);
+    this.checkinSort.set(currentSort === null ? 'asc' : currentSort === 'asc' ? 'desc' : 'asc');
     this.updateQueryParams();
   }
 
   sortByCheckout() {
-    this.bookService.sortByCheckOut(this.filteredBooks, this.checkoutSort);
-    this.checkoutSort = this.checkoutSort === undefined ? 'asc' : this.checkoutSort === 'asc' ? 'desc' : 'asc';
+    const currentSort = this.checkoutSort();
+    this.bookService.sortByCheckOut(this.filteredBooks, currentSort);
+    this.checkoutSort.set(currentSort === null ? 'asc' : currentSort === 'asc' ? 'desc' : 'asc');
     this.updateQueryParams();
   }
 
@@ -141,11 +131,11 @@ export class UserBookingsComponent implements OnInit{
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        id: this.idSort,
-        room: this.roomNameSort,
-        checkin: this.checkinSort,
-        checkout: this.checkoutSort,
-        price: this.priceSort,
+        id: this.idSort(),
+        room: this.roomNameSort(),
+        checkin: this.checkinSort(),
+        checkout: this.checkoutSort(),
+        price: this.priceSort(),
       },
       queryParamsHandling: 'merge'
     });

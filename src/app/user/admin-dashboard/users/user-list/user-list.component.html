@@ -1,40 +1,43 @@
 
 <div class="user-list-content">
 
-  <div class="container-fluid manage-user-row">
+  <div class="container-fluid rounded shadow-sm p-3 my-3" style="background-color: #CFD8DC;">
     <div class="row d-flex align-items-center">
-      <div class="col menu-text">MANAGE USERS</div>
+      <div class="col fw-bold text-shadow" style="font-size: 20px; color: #424242;">
+        <button class="btn book-btn ms-2 me-3 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
+        MANAGE USERS
+      </div>
       <div class="col">
         <div class="input-group">
           <button class="btn btn-outline-secondary">
             <i class="bi bi-search"></i>
           </button>
-          <input type="text" class="form-control" placeholder="Search.." #search (input)="onSearchUser(search.value)">
+          <input type="text" class="form-control bg-secondary-subtle border-secondary" placeholder="Search.." #search (input)="onSearchUser(search.value)">
         </div>
       </div>
     </div>
   </div>
 
-  @if(isLoading) {
-    <div class="container-fluid">
+  @if(isLoading()) {
+    <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
       <div class="row">
         <div class="col-md-4 offset-md-4 text-center">User data is loading, please be patient....</div>
       </div>
     </div>
   }
   @else {
-      <div class="container-fluid">
-        <!-- User-Menu Rows -->
-        <div class="row d-flex align-items-center text-shadow">
-          <div class="col id-col">
+    <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
+      <!-- User-Menu Rows -->
+        <div class="row d-flex align-items-center text-shadow py-2" style="font-size: 19px;">
+          <div class="col offset-md-1">
             ID
             <button class="btn btn-sm" type="button" (click)="sortById()">
-              @if(idSort === 'asc') {
+              @if(idSort() === 'asc') {
                 <i class="bi bi-arrow-down"></i>
               }
-              @if (idSort === 'desc'){
+              @if (idSort() === 'desc'){
                 <i class="bi bi-arrow-up"></i>
-              } @else if(idSort === undefined){
+              } @else if(idSort() === null){
                 <i class="bi bi-arrow-down-up"></i>
               }
             </button>
@@ -45,12 +48,12 @@
           <div class="col">
             First name
             <button class="btn btn-sm" type="button" (click)="sortByName()">
-              @if(nameSort === 'asc') {
+              @if(nameSort() === 'asc') {
                 <i class="bi bi-arrow-down"></i>
               }
-              @if (nameSort === 'desc'){
+              @if (nameSort() === 'desc'){
                 <i class="bi bi-arrow-up"></i>
-              } @else if(nameSort === undefined){
+              } @else if(nameSort() === null){
                 <i class="bi bi-arrow-down-up"></i>
               }
             </button>
@@ -65,15 +68,15 @@
             Details
           </div>
         </div>
-        <hr class="my-3 line-shadow">
+        <hr class="my-3 shadow-sm" style="height: 3px; background-color: #333;">
         <!-- User Rows -->
-        @for (u of filteredUsers | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; track u.id) {
-          <div class="row d-flex align-items-center user-row-item">
-            <div class="col id-col">#{{ u.id!.length > 5 ? (u.id | slice:0:5) + '...' : u.id }}</div>
+        @for (u of filteredUsers | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track u.id) {
+          <div class="row d-flex align-items-center py-1">
+            <div class="col offset-md-1">#{{ u.id!.length > 5 ? (u.id | slice:0:5) + '...' : u.id }}</div>
             <div class="col">{{ u.role }}</div>
             <div class="col">{{ u.firstName }}</div>
             <div class="col">{{ u.lastName }}</div>
-            <div class="col user-description">{{ u.email }}</div>
+            <div class="col">{{ u.email!.length > 15 ? (u.email | slice:0:15) + '...' : u.email }}</div>
             <div class="col">
               <button class="btn btn-outline-secondary btn-sm" (click)="openDetailsModal(u)">
                 <i class="bi bi-three-dots"></i>
@@ -83,7 +86,7 @@
           <hr class="my-3">
         }
         @empty {
-          <div class="container-fluid">
+          <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
             <div class="row">
               <div class="col-md-4 offset-md-4 text-center">No users to show yet.</div>
             </div>
@@ -91,13 +94,16 @@
         }
       </div>
       <!-- Pagination Controls -->
-      <div class="pagination-container">
-        <pagination-controls (pageChange)="page = $event" class="pagination-controls"></pagination-controls>
-        <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
-          @for (option of perPageOptions; track option) {
-            <option [value]="option" [selected]="option === itemsPerPage">{{ option }}</option>
-          }
-        </select>
+      <div class="d-flex justify-content-center align-items-center flex-wrap mt-4 pagination-container">
+        <pagination-controls (pageChange)="page = $event" class="pagination-controls mb-2"> </pagination-controls>
+        <div class="d-flex align-items-center ms-3 mb-2">
+          <label class="me-2 text-secondary">Items per page:</label>
+          <select #targetValue (change)="onItemsPerPageChange(targetValue.value)" class="items-per-page-dropdown">
+            @for (option of perPageOptions; track option) {
+              <option [value]="option" [selected]="option === itemsPerPage()">{{ option }}</option>
+            }
+          </select>
+        </div>
       </div>
   }
 

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NavbarComponent } from "../navbar/navbar.component";
 import { FooterComponent } from "../footer/footer.component";
@@ -20,7 +20,8 @@ export class HomeComponent implements OnInit{
 
   private guesthouseService = inject(GuesthouseService);
   private destroyRef = inject(DestroyRef);
-  isLoading = true;
+
+  isLoading = signal<boolean>(false);
 
   guesthouses: GuestHouse[] = [];
   amenities = Object.values(AmenitiesEnum).filter(key => isNaN(Number(key)));
@@ -37,6 +38,7 @@ export class HomeComponent implements OnInit{
   }
 
   private loadTop5Guesthouses (){
+    this.isLoading.set(true);
     this.guesthouseService.getTopFiveGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
@@ -46,7 +48,7 @@ export class HomeComponent implements OnInit{
         console.log(err);
       },
       complete: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     });
   }

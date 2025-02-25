@@ -8,14 +8,11 @@
     Are you sure you want to logout ?
   </div>
   <div class="modal-footer">
-    <!-- <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button> -->
-    <!-- <button type="button" class="btn btn-danger" (click)="onLogout()">Yes</button> -->
     <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isLoggingOut">Cancel</button>
     <button type="button" class="btn btn-danger d-flex align-items-center gap-2" (click)="onLogout()" [disabled]="isLoggingOut">
       <span class="spinner-border spinner-border-sm" role="status" [hidden]="!isLoggingOut"></span>
       <span>{{ isLoggingOut ? 'Logging out...' : 'Yes' }}</span>
     </button>
   </div>
-
 </div>
 

@@ -1,3 +1,4 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,57 +19,54 @@ import { RoomDto } from '../../../../../shared/models/dto/room.dto';
 })
 export class RoomListComponent implements OnInit{
 
-  private rooms: Room[] = [];
   private guesthouseId: string | null = null;
   private roomService = inject(RoomService);
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute); //to get guesthouseId & query params (for the sorting)
   private router = inject(Router); //update/reset query params
 
-  //state variables
-  isLoading = true;
+  //data holding objects
+  private rooms: Room[] = [];
+  filteredRooms: Room[] = [];
 
-  //search variables
-  //search = signal('');
-  filteredRooms = [...this.rooms];
+  //state variables
+  isLoading = signal<boolean>(false);
+  deletingId = signal<number | null>(null);
+  updatingId = signal<number | null>(null);
 
   //modal variables
   private modalService = inject(BsModalService);
   private modalRef?: BsModalRef;
 
   //sorting variables
-  idSort: 'asc' | 'desc' | undefined = undefined;
-  nameSort: 'asc' | 'desc' | undefined = undefined;
-  priceSort: 'asc' | 'desc' | undefined = undefined;
-  guesthouseIdSort: 'asc' | 'desc' | undefined = undefined;
+  idSort = signal<'asc' | 'desc' | null>(null);
+  nameSort = signal<'asc' | 'desc' | null>(null);
+  priceSort = signal<'asc' | 'desc' | null>(null);
+  guesthouseIdSort = signal<'asc' | 'desc' | null>(null);
 
   //pagination variables
-  page: number = 1; //current page
-  itemsPerPage: number = 5; // default
-  perPageOptions = [5, 8, 10, 20]; //dropdown options for user to choose
+  page: number = 1;
+  itemsPerPage = signal<number>(5);
+  perPageOptions = [6, 9, 12, 15];
 
   ngOnInit() {
-
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       this.guesthouseId = params.get('id');
       if(this.guesthouseId) {
         console.log('guesthouse id passed to room-list: ', this.guesthouseId);
       }
     })
-
-    //this.roomService.createRoom({amenities: [2], name:'test', description:'test', image:'test', guestHouseId: 7, price:80, numberOfBeds:2}).subscribe();
-
-    this.loadRooms(); //load rooms on initialization
-
+    this.loadRooms();
     this.router.navigate([], { //reset query params on reload
       queryParams: {},
-      replaceUrl: true // prevents adding to browser history
+      replaceUrl: true
     });
   }
 
 
   private loadRooms() {
-    const sub = this.roomService.getRoomsByGuestHouse(parseInt(this.guesthouseId!))
+    this.isLoading.set(true);
+    this.roomService.getRoomsByGuestHouse(parseInt(this.guesthouseId!)).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
         this.rooms = data;
@@ -78,16 +76,18 @@ export class RoomListComponent implements OnInit{
         console.error(err);
       },
       complete: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     });
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
+  showRecentlyAdded() {
+    this.filteredRooms = this.rooms.sort((a, b) => b.id - a.id);
+  }
 
   onItemsPerPageChange(targetValue: string) {
-    this.itemsPerPage = Number(targetValue);
-    this.page = 1; //go to page 1
+    this.itemsPerPage.set(Number(targetValue));
+    this.page = 1;
   }
 
   onSearchRoom(searchTerm: string) {
@@ -96,144 +96,121 @@ export class RoomListComponent implements OnInit{
     );
   }
 
-  openDeleteModal(room: Room) {
-    this.modalRef = this.modalService.show(ConfirmDeleteModalComponent); //open modal
-    this.router.navigate([], { queryParams: { action: 'delete' } });
-    this.modalRef.content.name = room.name;
-    const sub = this.modalRef.onHidden?.subscribe(() => { // operations kur del nga modal
-      this.router.navigate([], { queryParams: {} });
-      if(this.modalRef) {
-        const confirm = this.modalRef.content.confirm; //boolean: confirm delete -> users choice
-        if(confirm) {
-          this.onDeleteRoom(room.id);
-        }
-      } else {
-        console.log('ERROR: check modalRef for RoomList in openDeleteModal', this.modalRef);
+  openDeleteModal(roomId: number, roomName: string) {
+    const modalOptions = {
+      backdrop: 'static' as const,
+      keyboard: false,
+      initialState: {
+        name: roomName,
+      }
+    };
+    this.modalRef = this.modalService.show(ConfirmDeleteModalComponent, modalOptions);
+    this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if(this.modalRef?.content.confirm()) {
+        this.onDeleteRoom(roomId);
       }
     });
-    this.destroyRef.onDestroy(() => sub?.unsubscribe());
   }
 
   private onDeleteRoom(roomId: number) {
-    const sub = this.roomService.deleteRoom(roomId).subscribe(() => {
-      this.loadRooms();
+    this.deletingId.set(roomId);
+    this.roomService.deleteRoom(roomId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.loadRooms();
+      },
+      error: (err) => {
+        console.error('deleting failed:', err);
+      },
+      complete: () => {
+        this.deletingId.set(null);
+      }
     });
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
   openEditModal(room: Room) {
     const modalOptions = {
       backdrop: 'static' as const,
-      keyboard: false
+      keyboard: false,
+      initialState: {
+        onEditMode: true,
+        room: room!,
+      }
     };
     this.modalRef = this.modalService.show(RoomDetailsComponent, modalOptions);
-    this.router.navigate([], { queryParams: { action: 'edit' } });
-    this.modalRef.content.onEdit = true;
-    this.modalRef.content.roomName = room.name;
-    this.modalRef.content.guestHouseId = room.guestHouseId;
-
-    this.modalRef.content.roomForm.patchValue({
-      id: room.id, //readonly
-      name: room.name,
-      description: room.description,
-      image: room.image,
-      price: room.price,
-      numberOfBeds: room.numberOfBeds,
-      amenities: room.amenities,
-    });
-
-    const sub = this.modalRef.onHidden?.subscribe(() => {
-      this.router.navigate([], { queryParams: {} });
-      if(this.modalRef) {
-        const onSaveChanges = this.modalRef.content.onSaveChanges;
-        if(onSaveChanges) {
-          this.onEditRoom(room.id, this.modalRef.content.room);
-        }
-      } else {
-        console.log('ERROR: check modalRef for RoomDetailsComponent in openEditModal', this.modalRef);
+    this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if(this.modalRef?.content.onSubmitChanges()) {
+        this.onEditRoom(room.id, this.modalRef.content.room);
       }
     });
-    this.destroyRef.onDestroy(() => sub?.unsubscribe());
 
   }
 
-  private onEditRoom(id: number, room: RoomDto){
+  private onEditRoom(roomId: number, room: RoomDto){
     console.log('indisde onedit: ', room)
-    const sub = this.roomService.updateRoom(id, room).subscribe(() => {
-      this.loadRooms();
+    this.updatingId.set(roomId);
+    this.roomService.updateRoom(roomId, room).subscribe({
+      next: () => {
+        this.loadRooms();
+      },
+      error: (err) => {
+        console.error('updating failed:', err);
+      },
+      complete: () => {
+        this.updatingId.set(null);
+      }
     });
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
   openNewRoomModal() {
     const modalOptions = {
       backdrop: 'static' as const,
-      keyboard: false
+      keyboard: false,
+      initialState: {
+        onEditMode: false,
+        guesthouseId: parseInt(this.guesthouseId!)
+      }
     };
     this.modalRef = this.modalService.show(RoomDetailsComponent, modalOptions);
-    this.router.navigate([], { queryParams: { action: 'create-room' } });
-    this.modalRef.content.onNew = true;
-    this.modalRef.content.guestHouseId = parseInt(this.guesthouseId!);
-
-    const sub = this.modalRef.onHidden?.subscribe(() => {
-      this.router.navigate([], { queryParams: {} });
-      if(this.modalRef) {
-        const onSubmitNew = this.modalRef.content.onSubmitNew;
-        if(onSubmitNew) {
-          this.onAddRoom(this.modalRef.content.newRoom);
-        }
-      } else{
-        console.log('ERROR: check modalRef for RoomDetailsComponent on openNewRoomModal', this.modalRef);
+    this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if(this.modalRef?.content.onSubmitNew()) {
+        this.onAddRoom(this.modalRef.content.newRoom);
       }
     });
-    this.destroyRef.onDestroy(() => sub?.unsubscribe());
   }
 
   private onAddRoom(room: Room) {
     console.log('inside onAdd ', room)
-    const sub = this.roomService.createRoom(room).subscribe(() => {
+    this.roomService.createRoom(room).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.loadRooms();
     });
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
   sortById() {
-    this.roomService.sortById(this.filteredRooms, this.idSort); //ascend if desc & descend if asc/undef
-    if(this.idSort === undefined){ //undefined do jet vetem heren e par on reload cmp
-      this.idSort = 'desc'; //descending si first filter (just a preference)
-    } else {
-      this.idSort = this.idSort === 'asc' ? 'desc' : 'asc'; //update this.idSort
-    }
+    const currentSort = this.idSort();
+    this.roomService.sortById(this.filteredRooms, currentSort);
+    this.idSort.set(currentSort === null ? 'desc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByGuesthouseId() {
-    this.roomService.sortByGuesthouseId(this.filteredRooms, this.guesthouseIdSort); //ascend if desc & descend if asc/undef
-    if(this.guesthouseIdSort === undefined){ //undefined do jet vetem heren e par on reload cmp
-      this.guesthouseIdSort = 'desc'; //descending si first filter (just a preference)
-    } else {
-      this.guesthouseIdSort = this.guesthouseIdSort === 'asc' ? 'desc' : 'asc'; //update
-    }
+    const currentSort = this.guesthouseIdSort();
+    this.roomService.sortByGuesthouseId(this.filteredRooms, currentSort);
+    this.guesthouseIdSort.set(currentSort === null ? 'desc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByName() {
-    this.roomService.sortByName(this.filteredRooms, this.nameSort); //ascend if desc/undef & descend if asc
-    if(this.nameSort === undefined) { //undefined do jet vetem heren e par on reload cmp
-      this.nameSort = 'asc'; //ascending si first filter (just a preference)
-    } else {
-      this.nameSort = this.nameSort === 'asc' ? 'desc' : 'asc';
-    }
+    const currentSort = this.nameSort();
+    this.roomService.sortByName(this.filteredRooms, currentSort);
+    this.nameSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
+
   sortByPrice() {
-    this.roomService.sortByPrice(this.filteredRooms, this.priceSort); //ascend if desc/undef & descend if asc
-    if(this.priceSort === undefined){ //undefined do jet vetem heren e par on reload cmp
-      this.priceSort = 'asc'; //ascending si first filter (just a preference)
-    } else {
-      this.priceSort = this.priceSort === 'asc' ? 'desc' : 'asc'; //update this.setOrderById
-    }
+    const currentSort = this.priceSort();
+    this.roomService.sortByPrice(this.filteredRooms, currentSort);
+    this.priceSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
@@ -241,10 +218,10 @@ export class RoomListComponent implements OnInit{
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        id: this.idSort,
-        name: this.nameSort,
-        price: this.priceSort,
-        guesthouse: this.guesthouseIdSort,
+        id: this.idSort(),
+        name: this.nameSort(),
+        price: this.priceSort(),
+        guesthouse: this.guesthouseIdSort(),
       },
       queryParamsHandling: 'merge' // merge with existing params
     });

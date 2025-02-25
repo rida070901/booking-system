@@ -95,7 +95,7 @@
       </div>
     }
 
-    @if (loginForm.controls.email.hasError('invalidCredentials') && isLoginMode) {
+    @if (loginForm.controls.password.hasError('invalidCredentials') && isLoginMode) {
       <div class="text-danger small mt-1 mb-3">Invalid email or password.</div>
     }
 

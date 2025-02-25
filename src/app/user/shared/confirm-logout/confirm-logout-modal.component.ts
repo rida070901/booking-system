@@ -15,7 +15,6 @@ export class ConfirmLogoutModalComponent {
   private authService = inject(AuthService);
 
   isLoggingOut = false;
-  name: string = '';
 
   async onLogout() {
     this.isLoggingOut = true;

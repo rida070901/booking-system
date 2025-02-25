@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
@@ -12,13 +13,14 @@ import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker
 })
 export class HomeSearchComponent implements OnInit{
 
-  darkMode = input(false);
-  hideGuestsInputs: boolean = false;
-
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
-  searchParams: {checkIn: string; checkOut: string; adults: number; children: number} = { checkIn: '', checkOut: '', adults: 0, children: 0 };
+  darkMode = input(false);
+  hideGuestsInputs = signal<boolean>(false);
+
+  private searchParams: {checkIn: string; checkOut: string; adults: number; children: number} = { checkIn: '', checkOut: '', adults: 0, children: 0 };
 
   searchForm = new FormGroup({
     dateRange: new FormControl<Date[] | null>(null, { validators: [Validators.required] }),
@@ -28,7 +30,6 @@ export class HomeSearchComponent implements OnInit{
 
   adultsOptions = [1, 2, 3, 4];
   childrenOptions = [0, 1, 2, 3];
-
 
   datePickerConfig: Partial<BsDatepickerConfig> = {
     rangeInputFormat: 'YYYY-MM-DD',
@@ -40,9 +41,9 @@ export class HomeSearchComponent implements OnInit{
 
 
   ngOnInit() {
-    this.hideGuestsInputs = this.router.url.includes('/rooms');
+    this.hideGuestsInputs.set(this.router.url.includes('/rooms'));
     // fill search-form after search-button-click (if query params exist)
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params['checkIn'] && params['checkOut']) {
         this.searchForm.patchValue({
           dateRange: [new Date(params['checkIn'] ), new Date(params['checkOut'])],
@@ -57,7 +58,7 @@ export class HomeSearchComponent implements OnInit{
     console.log('clicked onSearch()');
     if (this.searchForm.valid) {
       const [checkIn, checkOut] = this.searchForm.value.dateRange as Date[];
-      console.log('date range:', this.searchForm.value.dateRange)
+      console.log('date-range clicked is: ', this.searchForm.value.dateRange)
       this.searchParams = {
         checkIn: checkIn.toISOString().split('T')[0],
         checkOut: checkOut.toISOString().split('T')[0],
@@ -71,13 +72,15 @@ export class HomeSearchComponent implements OnInit{
         this.router.navigate([], { //in guesthouse-list -> just reload the list
           relativeTo: this.route,
           queryParams: this.searchParams,
-          queryParamsHandling: 'merge' //merge new params without reloading cpm
+          queryParamsHandling: 'merge', //merge new params without reloading cpm
+          replaceUrl: true
         });
       } else if (this.router.url.includes('/rooms')) { //in room-list -> just reload with new search data
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: this.searchParams,
-          queryParamsHandling: 'merge'
+          queryParamsHandling: 'merge',
+          replaceUrl: true
         });
       }
     } else {

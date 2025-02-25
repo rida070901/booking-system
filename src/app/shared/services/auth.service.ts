@@ -1,72 +1,107 @@
-import { inject, Injectable } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse } from '../models/login.model';
 import { RegisterRequest } from '../models/register-request.model';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { User } from '../models/user.model';
+import { tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-
-  private baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
   private router = inject(Router);
   private jwtHelper = new JwtHelperService();
-  private token: string | null = null;
-  private userId: string | null = null;
+  private baseUrl = environment.apiUrl;
+
+  private token = signal<string | null>(localStorage.getItem('authToken'));
+  private userId = signal<string | null>(localStorage.getItem('userId'));
+  private redirectUrl: string | null = null;
+
+  // sgns for reactive authentication and role management
+  isLoggedIn = computed(() => !!this.token() && !this.jwtHelper.isTokenExpired(this.token()!));
+  userRole = computed(() => {
+    const t = this.token();
+    return t ? this.jwtHelper.decodeToken(t)?.role || null : null;
+  });
+
+  //replaced by using signals --> better approach
+  // private isLoggedInSubject = new BehaviorSubject<boolean>(this.isAuthenticated());
+  // isLoggedIn$ = this.isLoggedInSubject.asObservable();
+
+
+  constructor() { //to sync token and userId with localStorage changes if needed
+    effect(() => {
+      if (!this.isLoggedIn()) {
+        this.clearSession();
+      }
+    });
+  }
 
 
   login(request: LoginRequest) {
-    return this.http.post<LoginResponse>(`${this.baseUrl}${environment.endpoints.auth.login}`, request);
+    return this.http.post<LoginResponse>(`${this.baseUrl}${environment.endpoints.auth.login}`, request)
+    .pipe(
+      tap((response) => {
+        this.setToken(response.token);
+        this.setUserId(response.id);
+        // this.isLoggedInSubject.next(true); // emit login event
+      })
+    );
   }
 
   setToken(token: string) {
-    this.token = token;
+    this.token.set(token);
     localStorage.setItem('authToken', token);
   }
 
   getToken() {
-    return this.token || localStorage.getItem('authToken');
+    return this.token() || localStorage.getItem('authToken');
   }
 
   setUserId(userId: string) {
-    this.userId = userId;
+    this.userId.set(userId);
     localStorage.setItem('userId', userId.toString());
   }
 
   getUserId() {
-    return this.userId || localStorage.getItem('userId');
-  }
-
-  getRole() {
-    const token = this.getToken();
-    if (token) {
-      const decodedToken = this.jwtHelper.decodeToken(token);
-      return decodedToken?.role || null; //extracts role safely
-    }
-    return null;
+    return this.userId() || localStorage.getItem('userId');
   }
 
   logout() {
-    this.token = null;
-    localStorage.removeItem('authToken'); //clear token on logout
-    this.userId = null;
-    localStorage.removeItem('userId');
+    // this.isLoggedInSubject.next(false); // emit logout event
+    this.clearSession();
     this.router.navigate(['/home']);
   }
 
+  private clearSession() {
+    this.token.set(null);
+    localStorage.removeItem('authToken');
+    this.userId.set(null);
+    localStorage.removeItem('userId');
+  }
+
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    return token ? !this.jwtHelper.isTokenExpired(token) : false;
+    return this.isLoggedIn();
   }
 
   register(request: RegisterRequest) {
-    console.log('inside authservice request with request data: ', request)
     return this.http.post<LoginResponse>(`${this.baseUrl}${environment.endpoints.auth.register}`, request);
   }
+
+
+  setRedirectUrl(url: string) {
+    this.redirectUrl = url;
+  }
+
+  getRedirectUrl(): string | null {
+    return this.redirectUrl;
+  }
+
+  clearRedirectUrl() {
+    this.redirectUrl = null;
+  }
+
 }

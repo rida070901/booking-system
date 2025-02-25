@@ -128,50 +128,24 @@ export class RoomService {
     return this.http.post<BookDto>(`${this.baseUrl}${environment.endpoints.room.book}`, bookingDetails);
   }
 
-  sortById(rooms: Room[], order: 'asc' | 'desc' | undefined) {
-    rooms.sort((a, b) => {
-      if (order === 'desc') {
-        return a.id - b.id; // ascending if desc
-      } else {
-        return b.id - a.id; // descending if asc/undef
-      }
-    });
+  sortById(rooms: Room[], order: 'asc' | 'desc' | null) {
+    rooms.sort((a, b) => (order === 'desc' ? a.id - b.id : b.id - a.id));
   }
 
-  sortByGuesthouseId(rooms: Room[], order: 'asc' | 'desc' | undefined) {
-    rooms.sort((a, b) => {
-      if (order === 'desc') {
-        return a.id - b.id; // ascending if desc
-      } else {
-        return b.id - a.id; // descending if asc/undef
-      }
-    });
-  }
-
-  sortByPrice(rooms: Room[], order: 'asc' | 'desc' | undefined) {
-    rooms.sort((a, b) => {
-      if (order === 'asc') {
-        return b.price - a.price; // descending if asc
-      } else {
-        return a.price - b.price; // ascending if desc/undef
-      }
-    });
-  }
-
-  sortByName(rooms: Room[], order: 'asc' | 'desc' | undefined) {
+  sortByName(rooms: Room[], order: 'asc' | 'desc' | null) {
     rooms.sort((a, b) => {
       const nameA = a.name!.toLowerCase();
       const nameB = b.name!.toLowerCase();
-      if (order === undefined) {
-        return nameA > nameB ? 1 : (nameA < nameB ? -1 : 0); // first -> ascending order
-      }
-      else if (order === 'desc') {
-        return nameA > nameB ? 1 : (nameA < nameB ? -1 : 0); // ascending order
-      }
-      else {
-        return nameA < nameB ? 1 : (nameA > nameB ? -1 : 0); // descending order
-      }
+      return (order === 'asc') ? (nameB.localeCompare(nameA)) : nameA.localeCompare(nameB);
     });
+  }
+
+  sortByGuesthouseId(rooms: Room[], order: 'asc' | 'desc' | null) {
+    rooms.sort((a, b) => (order === 'desc' ? a.id - b.id : b.id - a.id));
+  }
+
+  sortByPrice(rooms: Room[], order: 'asc' | 'desc' | null) {
+    rooms.sort((a, b) => (order === 'asc' ? b.price - a.price : a.price - b.price));
   }
 
 }

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { BsModalRef, BsModalService, ModalModule } from 'ngx-bootstrap/modal';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,47 +7,54 @@ import { GuestHouse } from '../../../../shared/models/guesthouse.model';
 import { ConfirmDeleteModalComponent } from '../../../shared/confirm-delete/confirm-delete-modal.component';
 import { GuesthouseDetailsComponent } from '../guesthouse-details-modal/guesthouse-details.component';
 import { GuesthouseService } from '../../../../shared/services/guesthouse.service';
+import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { GuestHouseDto } from '../../../../shared/models/dto/guesthouse.dto';
 
 
 @Component({
   selector: 'app-guesthouse-list',
   standalone: true,
-  imports: [ModalModule, NgxPaginationModule, FormsModule, RouterLink],
+  imports: [ModalModule, NgxPaginationModule, FormsModule, RouterLink, CommonModule],
   providers: [BsModalService],
   templateUrl: './guesthouse-list.component.html',
   styleUrls: ['./guesthouse-list.component.css']
 })
 export class GuesthouseListComponent implements OnInit{
 
-  private guesthouses: GuestHouse[] = [];
   private guesthouseService = inject(GuesthouseService);
   private destroyRef = inject(DestroyRef);
-  private route = inject(ActivatedRoute); //to get query params (for the sorting)
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  //data holding objects
+  private guesthouses: GuestHouse[] = []; //has all guesthouses
+  filteredGuesthouses: GuestHouse[] = []; //copy of filtered 'guesthouses' (showed on ui)
+  //shallow copy - if theres nested objects -> operations on filteredGuesthouses will also change values inside guesthouses (bc its just a reference of g in fg)
+  //deep copy (copy also nested objects inside Guesthouse object)
+  //filteredGuesthouses = JSON.parse(JSON.stringify(this.guesthouses));
+
   //state variables
-  isLoading = true;
+  isLoading = signal<boolean>(false);
+  deletingId = signal<number | null>(null);
+  updatingId = signal<number | null>(null);
 
   // modal variables
   private modalService = inject(BsModalService);
   private modalRef?: BsModalRef;
 
   //sorting variables (me arrow posht/lart or both when undefined & query params)
-  idSort: 'asc' | 'desc' | undefined = undefined;
-  nameSort: 'asc' | 'desc' | undefined = undefined;
+  idSort = signal<'asc' | 'desc' | null>(null);
+  nameSort = signal<'asc' | 'desc' | null>(null);
 
   //pagination variables
   page: number = 1; //current page
-  itemsPerPage: number = 5; // default
-  perPageOptions = [5, 8, 10, 20]; //dropdown options for user to choose
+  itemsPerPage = signal<number>(5); // default
+  perPageOptions = [6, 9, 12, 15]; //dropdown options for user to choose
   //private selectedItemsPerPage = viewChild.required<ElementRef<HTMLSelectElement>>('targetValue'); //view selected dropdown from user
 
   //search variables
-  search: string = '';
-  filteredGuesthouses = [...this.guesthouses];
-  //shallow copy - if theres nested objects -> operations on filteredGuesthouses will also change values inside guesthouses (bc its just a reference of g in fg)
-  //deep copy (copy also nested objects inside Guesthouse object)
-  //filteredGuesthouses = JSON.parse(JSON.stringify(this.guesthouses));
+  search = signal<string>('');
 
 
   ngOnInit() {
@@ -55,8 +62,8 @@ export class GuesthouseListComponent implements OnInit{
     //load guesthouses list
     this.loadGuesthouses();
 
-    this.router.navigate([], { //reset query params on reload
-      queryParams: {},
+    this.router.navigate([], {
+      queryParams: {}, //reset query params on reload
       replaceUrl: true // prevents adding to browser history
     });
 
@@ -73,7 +80,9 @@ export class GuesthouseListComponent implements OnInit{
   }
 
   private loadGuesthouses (){
-    const sub = this.guesthouseService.getAllGuestHouses().subscribe({
+    this.isLoading.set(true);
+    this.guesthouseService.getAllGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: (data) => {
         this.guesthouses = data;
         this.filteredGuesthouses = data;
@@ -91,15 +100,18 @@ export class GuesthouseListComponent implements OnInit{
         console.log(err);
       },
       complete: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     }
     );
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
+  }
+
+  showRecentlyAdded() {
+    this.filteredGuesthouses = this.guesthouses.sort((a, b) => b.id - a.id);
   }
 
   onItemsPerPageChange(targetValue: string) {
-    this.itemsPerPage = Number(targetValue); // passing template var (#targetValue) as arg to this method in html -> easiest way in this case
+    this.itemsPerPage.set(Number(targetValue)); // passing template var (#targetValue) as arg to this method in html -> easiest way in this case
     this.page = 1;
     //console.log(this.selectedItemsPerPage().nativeElement);
     //this.itemsPerPage = Number(this.selectedItemsPerPage().nativeElement.value);
@@ -108,138 +120,112 @@ export class GuesthouseListComponent implements OnInit{
     //this.itemsPerPage = Number(target.value); // convert string to number
   }
 
-  openDeleteModal(guesthouse: GuestHouse) {
+  openDeleteModal(guesthouseId: number, guesthouseName: string) {
     //console.log(`Guesthouse ${guesthouse.id} about to be deleted!`);
-    this.modalRef = this.modalService.show(ConfirmDeleteModalComponent); //hap modal
-    this.router.navigate([], { queryParams: { action: 'delete' } });
-    this.modalRef.content.name = guesthouse.name;
-    const sub = this.modalRef.onHidden?.subscribe(() => { // operations kur del nga modal
-      this.router.navigate([], { queryParams: {} });
-      //console.log('inside on hidden');
-      if(this.modalRef) {
-        const confirm = this.modalRef.content.confirm; //boolean: confirm delete -> users choice
-        if(confirm) {
-          this.onDeleteGuesthouse(guesthouse.id);
-        }
-      } else {
-        console.log('ERROR: check modalRef for GuesthouseList in openDeleteModal', this.modalRef);
+    const modalOptions = {
+      backdrop: 'static' as const,
+      keyboard: false,
+      initialState: {
+        name: guesthouseName,
+      }
+    };
+    this.modalRef = this.modalService.show(ConfirmDeleteModalComponent, modalOptions); //hap modal
+    this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => { // operations kur del nga modal
+      if(this.modalRef?.content.confirm()) { //boolean: confirm delete -> users choice
+        this.onDeleteGuesthouse(guesthouseId);
       }
     });
-    this.destroyRef.onDestroy(() => sub?.unsubscribe());
   }
 
   private onDeleteGuesthouse(guesthouseId: number) {
-    const sub = this.guesthouseService.deleteGuestHouse(guesthouseId).subscribe(() => {
-      this.loadGuesthouses();
+    this.deletingId.set(guesthouseId);
+    this.guesthouseService.deleteGuestHouse(guesthouseId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.loadGuesthouses(); //refresh list
+      },
+      error: (err) => {
+        console.error('deleting failed:', err);
+      },
+      complete: () => {
+        this.deletingId.set(null);
+      }
     });
-    //console.log(`Guesthouse ${guesthouseId} deleted!`);
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
   openEditModal(guesthouse: GuestHouse) {
     // console.log(`Guesthouse ${guesthouse.id} about to be editted!`);
-    // this.router.navigate(['admin/guesthouses/details']); //change url - just for view purposes
     const modalOptions = {
       backdrop: 'static' as const,
-      keyboard: false
+      keyboard: false,
+      initialState: {
+        onEditMode: true,
+        guesthouse: guesthouse!,
+      }
     };
     this.modalRef = this.modalService.show(GuesthouseDetailsComponent, modalOptions);
-    this.router.navigate([], { queryParams: { action: 'edit' } });
-    this.modalRef.content.onEdit = true;
-    this.modalRef.content.guesthouseName = guesthouse.name;
-
-    //patch selected guesthouse values to the form as default values to then edit
-    this.modalRef.content.guesthouseForm.patchValue({
-      id: guesthouse.id, //kjo do jet readonly
-      name: guesthouse.name,
-      description: guesthouse.description,
-    });
-
-    const sub = this.modalRef.onHidden?.subscribe(() => {
-      this.router.navigate([], { queryParams: {} });
-      if(this.modalRef) {
-        const onSaveChanges = this.modalRef.content.onSaveChanges;
-        if(onSaveChanges) {
-          this.onEditGuesthouse(this.modalRef.content.guesthouse);
-          //console.log(this.modalRef.content.guesthouseForm.value);
-          //this.onEditGuesthouse(this.modalRef.content.guesthouseForm.value);
-        }
-        // this.router.navigate(['admin/guesthouses']);
-      } else {
-        console.log('ERROR: check modalRef for GuesthouseDetailsComponent in openEditModal', this.modalRef);
+    this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if(this.modalRef?.content.onSubmitChanges()) {
+        this.onEditGuesthouse(guesthouse.id, this.modalRef.content.updatedGuesthouse);
       }
     });
-    this.destroyRef.onDestroy(() => sub?.unsubscribe());
-
   }
 
-  private onEditGuesthouse(guesthouse: GuestHouse){
-    const sub = this.guesthouseService.updateGuestHouse(guesthouse.id, guesthouse).subscribe(() => {
-      this.loadGuesthouses();
-      //console.log(`Guesthouse ${guesthouse.id} updated!`);
+  private onEditGuesthouse(guesthouseId: number, guesthouse: GuestHouseDto){
+    this.updatingId.set(guesthouseId);
+    this.guesthouseService.updateGuestHouse(guesthouseId, guesthouse).pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: () => {
+        this.loadGuesthouses(); //refresh list
+      },
+      error: (err) => {
+        console.error('updating failed:', err);
+      },
+      complete: () => {
+        this.updatingId.set(null);
+      }
     });
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
   openNewGuesthouseModal() {
     const modalOptions = {
       backdrop: 'static' as const,
-      keyboard: false
+      keyboard: false,
+      initialState: {
+        onEditMode: false,
+      }
     };
     this.modalRef = this.modalService.show(GuesthouseDetailsComponent, modalOptions);
-    this.router.navigate([], { queryParams: { action: 'create-guesthouse' } });
-    this.modalRef.content.onNew = true;
-
-    const sub = this.modalRef.onHidden?.subscribe(() => {
-      this.router.navigate([], { queryParams: {} });
-      if(this.modalRef) {
-        const onSubmitNew = this.modalRef.content.onSubmitNew;
-        if(onSubmitNew) {
-          this.onAddGuesthouse(this.modalRef.content.newGuesthouse);
-        }
-      } else{
-        console.log('ERROR: check modalRef for GuesthouseDetailsComponent on openNewGuesthouseModal', this.modalRef);
+    this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if(this.modalRef?.content.onSubmitNew()) {
+        this.onAddGuesthouse(this.modalRef.content.newGuesthouse);
       }
     });
-    this.destroyRef.onDestroy(() => sub?.unsubscribe());
   }
 
-  private onAddGuesthouse(guesthouse: GuestHouse) {
-    console.log('inside onAddGuesthouse with new: ', guesthouse);
-    const sub = this.guesthouseService.createGuestHouse(guesthouse).subscribe(() => {
+  private onAddGuesthouse(guesthouse: GuestHouseDto) {
+    // console.log('inside onAddGuesthouse with new: ', guesthouse);
+    this.guesthouseService.createGuestHouse(guesthouse).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.loadGuesthouses();
-      console.log(`Guesthouse ${guesthouse} added!`);
     });
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
-  onSearchGuesthouse() {
-    if(!this.search) {
-      this.filteredGuesthouses = [...this.guesthouses];
-      return;
-    }
+  onSearchGuesthouse() { //with ngmodel
     this.filteredGuesthouses = this.guesthouses.filter(g =>
-      g.name?.toLowerCase().includes(this.search.trim().toLowerCase())
+      g.name?.toLowerCase().includes(this.search().trim().toLowerCase())
     );
   }
 
   sortById() {
-    this.guesthouseService.sortById(this.filteredGuesthouses, this.idSort); //ascend if desc & descend if asc/undef
-    if(this.idSort === undefined){ //undefined do jet vetem heren e par on reload cmp
-      this.idSort = 'desc'; //descending si first filter (just a preference)
-    } else {
-      this.idSort = this.idSort === 'asc' ? 'desc' : 'asc'; //update this.setOrderById
-    }
+    const currentSort = this.idSort();
+    this.guesthouseService.sortById(this.filteredGuesthouses, currentSort);
+    this.idSort.set(currentSort === null ? 'desc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
   sortByName() {
-    this.guesthouseService.sortByName(this.filteredGuesthouses, this.nameSort); //ascend if desc/undef & descend if asc
-    if(this.nameSort === undefined) { //undefined do jet vetem heren e par on reload cmp
-      this.nameSort = 'asc'; //ascending si first filter (just a preference)
-    } else {
-      this.nameSort = this.nameSort === 'asc' ? 'desc' : 'asc';
-    }
+    const currentSort = this.nameSort();
+    this.guesthouseService.sortByName(this.filteredGuesthouses, currentSort);
+    this.nameSort.set(currentSort === null ? 'asc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
@@ -248,8 +234,8 @@ export class GuesthouseListComponent implements OnInit{
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        name: this.nameSort,
-        id: this.idSort,
+        name: this.nameSort(),
+        id: this.idSort(),
       },
       queryParamsHandling: 'merge' // merge with existing params
     });

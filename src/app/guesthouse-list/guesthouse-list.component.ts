@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { GuesthouseService } from '../shared/services/guesthouse.service';
 import { GuestHouse } from '../shared/models/guesthouse.model';
 import { GuesthouseCardComponent } from "../shared/guesthouse-card/guesthouse-card.component";
@@ -23,15 +23,20 @@ export class GuesthouseListComponent implements OnInit{
     private router = inject(Router);
     private route = inject(ActivatedRoute);
 
-    isLoading = false;
-    isAllGuesthouses = false;
-
-    guesthouses: GuestHouse[] = [];
+    //data objects
+    private guesthouses: GuestHouse[] = [];
     filteredGuesthouses: GuestHouse[] = [];
+    private selectedFilter = signal<string>('');
     queryParams: GuestHouseParamsDto = {};
-    selectedFilter: string = '';
+
+    //state variables
+    isLoading = signal<boolean>(false);
+    isAllGuesthouses = signal<boolean>(false);
+    currentView = signal<'all' | 'top5' | 'available'>('all');
+
+    //pagination variables
     page: number = 1;
-    itemsPerPage: number = 6;
+    itemsPerPage = signal<number>(6);
     perPageOptions = [6, 9, 12, 15];
 
 
@@ -46,6 +51,8 @@ export class GuesthouseListComponent implements OnInit{
             numberOfBeds: (parseInt(adults) + parseInt(children)) as number || undefined,
           };
           this.loadAvailableGuesthouses();
+        } else if (this.currentView() === 'top5') {
+          this.loadTop5Guesthouses();
         } else {
           this.loadAllGuesthouses();
         }
@@ -53,54 +60,59 @@ export class GuesthouseListComponent implements OnInit{
     }
 
     private loadAllGuesthouses() {
-      this.isLoading = true;
-      this.isAllGuesthouses = true;
+      this.currentView.set('all');
+      this.isLoading.set(true);
+      this.isAllGuesthouses.set(true);
       this.guesthouseService.getAllGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.guesthouses = data;
           this.filteredGuesthouses = data;
-          if (this.selectedFilter) this.applyFilter(this.selectedFilter);
+          if (this.selectedFilter) this.applyFilter(this.selectedFilter());
         },
         error: (err) => console.log(err),
         complete: () => {
-          this.isLoading = false;
+          this.isLoading.set(false);
         }
       });
     }
 
     private loadAvailableGuesthouses() {
-      this.isLoading = true;
-      this.isAllGuesthouses = false;
+      this.currentView.set('available');
+      this.isLoading.set(true);
+      this.isAllGuesthouses.set(false);
       this.guesthouseService.getAvailableGuestHouses(this.queryParams).pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.guesthouses = data;
           this.filteredGuesthouses = data;
-          if (this.selectedFilter) this.applyFilter(this.selectedFilter);
+          if (this.selectedFilter) this.applyFilter(this.selectedFilter());
         },
         error: (err: Error) => {
           console.log(err);
         },
         complete: () => {
-          this.isLoading = false;
+          this.isLoading.set(false);
         }
       })
     }
 
     private loadTop5Guesthouses (){
-      this.isLoading = true;
-      this.isAllGuesthouses = false;
+      this.currentView.set('top5');
+      this.isLoading.set(true);
+      this.isAllGuesthouses.set(false);
       this.guesthouseService.getTopFiveGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.guesthouses = data;
+          this.filteredGuesthouses = data;
+          if (this.selectedFilter) this.applyFilter(this.selectedFilter());
         },
         error: (err: Error) => {
           console.log(err);
         },
         complete: () => {
-          this.isLoading = false;
+          this.isLoading.set(false);
         }
       });
     }
@@ -122,7 +134,7 @@ export class GuesthouseListComponent implements OnInit{
     }
 
     onItemsPerPageChange(targetValue: string) {
-      this.itemsPerPage = Number(targetValue);
+      this.itemsPerPage.set(Number(targetValue));
       this.page = 1;
     }
 
@@ -133,7 +145,7 @@ export class GuesthouseListComponent implements OnInit{
     }
 
     applyFilter(filter: string) {
-      this.selectedFilter = filter;
+      this.selectedFilter.set(filter);
       if (this.guesthouses) {
         this.filteredGuesthouses = this.guesthouses.sort((a, b) => {
           switch (filter) {
@@ -160,7 +172,7 @@ export class GuesthouseListComponent implements OnInit{
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: {
-          filter: this.selectedFilter,
+          filter: this.selectedFilter(),
         },
         queryParamsHandling: 'merge' // merge with existing params
       });

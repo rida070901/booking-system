@@ -2,10 +2,10 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content p-3">
       <div class="modal-header">
-        @if(onEdit) {
+        @if(onEditMode) {
           <h5 class="modal-title">EDIT GUESTHOUSE DETAILS</h5>
         }
-        @if(onNew) {
+        @else {
           <h5 class="modal-title">ADD NEW GUESTHOUSE</h5>
         }
         <button type="button" class="btn-close" (click)="onCloseModal()"></button>
@@ -13,15 +13,15 @@
 
       <div class="modal-body">
         <form [formGroup]="guesthouseForm" class="p-4 rounded" style="background: #e9ecef;">
-          @if(onEdit) {
-            <h2 class="text-center text-dark">{{ guesthouseName }}</h2>
+          @if(onEditMode) {
+            <h2 class="text-center text-dark">{{ guesthouse.name }}</h2>
           }
-          @if(onNew) {
+          @else {
             <h2 class="text-center text-dark">Fill the details</h2>
           }
 
           <div class="mb-3">
-            @if(onEdit) {
+            @if(onEditMode) {
               <label for="id" class="form-label">ID</label>
               <input id="id" type="number" [formControl]="guesthouseForm.controls.id" readonly class="form-control" />
             }
@@ -34,6 +34,7 @@
             @if(guesthouseForm.controls.name.invalid && guesthouseForm.controls.name.touched) {
               <div class="text-danger small mt-1">
                 @if(guesthouseForm.controls.name.errors?.['required']) { <small>Name is required.</small> }
+                @if(guesthouseForm.controls.name.errors?.['minlength']) { <small>Min 3 characters required.</small> }
                 @if(guesthouseForm.controls.name.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
               </div>
             }
@@ -46,21 +47,22 @@
             @if(guesthouseForm.controls.description.invalid && guesthouseForm.controls.description.touched) {
               <div class="text-danger small mt-1">
                 @if(guesthouseForm.controls.description.errors?.['required']) { <small>Description is required.</small> }
+                @if(guesthouseForm.controls.description.errors?.['minlength']) { <small>Min 10 characters required.</small> }
                 @if(guesthouseForm.controls.description.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
               </div>
             }
           </div>
-          @if( (submitErrorMsg || submitErrorMsg) && guesthouseForm.invalid) {
+          @if(submitErrorMsg() && guesthouseForm.invalid) {
             <div class="alert alert-danger text-center">
               Please fill out all required fields correctly!
             </div>
           }
           <div class="d-flex justify-content-between">
             <button type="button" class="btn btn-secondary" (click)="onCloseModal()">Cancel</button>
-            @if(onEdit) {
+            @if(onEditMode) {
               <button type="button" class="btn btn-success" (click)="onSave(true)">Save</button>
             }
-            @if(onNew) {
+            @else {
               <button type="button" class="btn btn-success" (click)="onSubmit(true)">Submit</button>
             }
           </div>

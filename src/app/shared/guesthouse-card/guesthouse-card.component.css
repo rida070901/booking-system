@@ -27,8 +27,3 @@ p.text-muted {
   background-color: #49545d; /* Slightly darker on hover */
   transform: scale(1.05); /* Slight zoom effect */
 }
-
-
-/* .guesthouse-item:hover {
-  transform: scale(1.05) rotate(1deg);
-} */
