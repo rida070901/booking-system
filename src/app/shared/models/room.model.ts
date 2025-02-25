@@ -13,7 +13,4 @@ export interface Room {
   guestHouseId: number;
   amenities?: AmenitiesEnum[] | null;
   books?: Book[] | null;
-  // guestHouse?: GuestHouse;
-  // createdBy?: string | null;
-  // createdDate?: string;
 }

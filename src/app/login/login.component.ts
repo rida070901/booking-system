@@ -30,9 +30,9 @@ export class LoginComponent {
   });
 
   registerForm = new FormGroup({
-    username: new FormControl('', { validators: [Validators.required] }),
-    firstName: new FormControl('', { validators: [Validators.required] }),
-    lastName: new FormControl('', { validators: [Validators.required] }),
+    username: new FormControl('', { validators: [Validators.required, Validators.minLength(3), Validators.maxLength(20)] }),
+    firstName: new FormControl('', { validators: [Validators.required, Validators.minLength(2), Validators.maxLength(50)] }),
+    lastName: new FormControl('', { validators: [Validators.required, Validators.minLength(2), Validators.maxLength(50)] }),
     email: new FormControl('', { validators: [Validators.email, Validators.required] }),
     password: new FormControl('', { validators: [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{6,}$/)] }),
     confirmPassword: new FormControl('', { validators: [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{6,}$/)] }),

@@ -17,6 +17,8 @@
           <div class="text-danger small mt-1">Username is not available.</div>
         } @else if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
           <div class="text-danger small mt-1">Username is required.</div>
+          @if(registerForm.controls.username.errors?.['minlength']) { <small>Min 3 characters required.</small> }
+          @if(registerForm.controls.username.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
         }
       </div>
       <div class="row">
@@ -26,6 +28,8 @@
                  formControlName="firstName" placeholder="enter first name">
           @if (registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid) {
             <div class="text-danger small mt-1">First name is required.</div>
+            @if(registerForm.controls.firstName.errors?.['minlength']) { <small>Min 2 characters required.</small> }
+            @if(registerForm.controls.firstName.errors?.['maxlength']) { <small>Max 50 characters allowed.</small> }
           }
         </div>
         <div class="col mb-3">
@@ -34,6 +38,8 @@
                  formControlName="lastName" placeholder="enter last name">
           @if (registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid) {
             <div class="text-danger small mt-1">Last name is required.</div>
+            @if(registerForm.controls.lastName.errors?.['minlength']) { <small>Min 2 characters required.</small> }
+            @if(registerForm.controls.lastName.errors?.['maxlength']) { <small>Max 50 characters allowed.</small> }
           }
         </div>
       </div>
