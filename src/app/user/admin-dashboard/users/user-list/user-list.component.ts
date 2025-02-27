@@ -67,7 +67,7 @@ export class UserListComponent implements OnInit{
   }
 
   showRecentlyAdded() {
-    this.filteredUsers = this.users.sort((a, b) => b.id!.localeCompare(a.id!));
+    this.filteredUsers = this.users.sort((a, b) => a.id!.localeCompare(b.id!));
   }
 
 
@@ -87,7 +87,7 @@ export class UserListComponent implements OnInit{
       backdrop: 'static' as const,
       keyboard: false,
       initialState: {
-        user: user,
+        user,
       }
     };
     this.modalRef = this.modalService.show(UserDetailsComponent, modalOptions);
@@ -107,14 +107,14 @@ export class UserListComponent implements OnInit{
     this.updateQueryParams();
   }
 
-  private updateQueryParams() { // update the query parameters in the URL
+  private updateQueryParams() {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
         id: this.idSort(),
         name: this.nameSort(),
       },
-      queryParamsHandling: 'merge' // merge with existing params
+      queryParamsHandling: 'merge'
     });
   }
 

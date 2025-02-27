@@ -19,5 +19,4 @@ export class ConfirmDeleteModalComponent {
     this.bsModalRef.hide();
   }
 
-
 }

@@ -9,7 +9,7 @@
 
     <hr>
 
-    @if (isLoading) {
+    @if (isLoading()) {
       <div class="text-center mt-3">
         <div class="spinner-border text-secondary" role="status"></div>
       </div>
@@ -47,8 +47,8 @@
 
 
         <div class="d-flex justify-content-end">
-          <button type="submit" class="btn btn-dark btn-sm rounded-3 px-3" [disabled]="userForm.invalid || isLoading">
-            @if (isLoading) {
+          <button type="submit" class="btn btn-dark btn-sm rounded-3 px-3" [disabled]="userForm.invalid || isLoading()">
+            @if (isLoading()) {
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span>Saving...</span>
             } @else {

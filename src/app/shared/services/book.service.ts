@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Book } from '../models/book.model';
 import { environment } from '../../../environments/environment';
+import { BookedDate } from '../models/dto/book.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +16,13 @@ export class BookService {
 
   getBookingByRoom(roomId: number) {
     return this.http.get<Book[]>(`${this.baseUrl}${environment.endpoints.bookings.getByRoom(roomId)}`);
+  }
+
+  getBookedDatesByRoom(roomId: number) {
+    return this.http.get<Book[]>(`${this.baseUrl}${environment.endpoints.bookings.getByRoom(roomId)}`)
+    .pipe(
+      map((data) => data.map(({ bookFrom, bookTo }): BookedDate => ({ bookFrom, bookTo })))
+    );
   }
 
   getBookingsByUser(userId: string) {

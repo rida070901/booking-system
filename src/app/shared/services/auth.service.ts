@@ -21,7 +21,7 @@ export class AuthService {
   private redirectUrl: string | null = null;
 
   // sgns for reactive authentication and role management
-  isLoggedIn = computed(() => !!this.token() && !this.jwtHelper.isTokenExpired(this.token()!));
+  private isLoggedIn = computed(() => !!this.token() && !this.jwtHelper.isTokenExpired(this.token()!));
   userRole = computed(() => {
     const t = this.token();
     return t ? this.jwtHelper.decodeToken(t)?.role || null : null;
@@ -52,22 +52,26 @@ export class AuthService {
     );
   }
 
-  setToken(token: string) {
+  private setToken(token: string) {
     this.token.set(token);
     localStorage.setItem('authToken', token);
+  }
+
+  private setUserId(userId: string) {
+    this.userId.set(userId);
+    localStorage.setItem('userId', userId.toString());
   }
 
   getToken() {
     return this.token() || localStorage.getItem('authToken');
   }
 
-  setUserId(userId: string) {
-    this.userId.set(userId);
-    localStorage.setItem('userId', userId.toString());
-  }
-
   getUserId() {
     return this.userId() || localStorage.getItem('userId');
+  }
+
+  isAuthenticated(): boolean {
+    return this.isLoggedIn();
   }
 
   logout() {
@@ -81,10 +85,6 @@ export class AuthService {
     localStorage.removeItem('authToken');
     this.userId.set(null);
     localStorage.removeItem('userId');
-  }
-
-  isAuthenticated(): boolean {
-    return this.isLoggedIn();
   }
 
   register(request: RegisterRequest) {

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../../shared/services/auth.service';
 import { UserService } from '../../../shared/services/user.service';
 import { User } from '../../../shared/models/user.model';
@@ -14,15 +14,16 @@ import { UserDto } from '../../../shared/models/dto/user.dto';
   styleUrl: './user-profile.component.css'
 })
 export class UserProfileComponent implements OnInit {
+
   authService = inject(AuthService);
   userService = inject(UserService);
   destroyRef = inject(DestroyRef);
   sanitizer = inject(DomSanitizer);
 
+  isLoading = signal<boolean>(false);
+
   private userId = this.authService.getUserId() ? this.authService.getUserId() : '';
-  isLoading = true;
   user: User = {id: '', firstName: '', lastName: '', email: '', phoneNumber: '', role: '' };
-  profileImage: string | ArrayBuffer | null = 'assets/default-profile.png';
 
   userForm = new FormGroup({
     firstName: new FormControl('', [Validators.required, Validators.maxLength(20)]),
@@ -36,6 +37,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   private fetchUser() {
+    this.isLoading.set(true);
     this.userService.getUserById(this.userId!).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
@@ -48,13 +50,13 @@ export class UserProfileComponent implements OnInit {
         });
       },
       error: (err: Error) => console.error(err),
-      complete: () => (this.isLoading = false)
+      complete: () => ( this.isLoading.set(false) )
     });
   }
 
   onSubmit() {
     if (this.userForm.invalid) return;
-    this.isLoading = true;
+    this.isLoading.set(true);
     const updatedUser: UserDto = {
       ...this.user,
       ...this.userForm.getRawValue()
@@ -67,7 +69,7 @@ export class UserProfileComponent implements OnInit {
     .subscribe({
       next: () => this.fetchUser(), // Refresh user data
       error: (err) => console.error('Update failed:', err),
-      complete: () => (this.isLoading = false)
+      complete: () => (this.isLoading.set(false))
     });
   }
 

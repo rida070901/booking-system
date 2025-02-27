@@ -114,6 +114,7 @@ export class RoomService {
 
   createRoom(room: Room) {
     return this.http.post<RoomDto>(`${this.baseUrl}${environment.endpoints.room.create}`, room);
+    // return this.http.post<RoomDto>(`https://cors-anywhere.herokuapp.com/${this.baseUrl}${environment.endpoints.room.create}`, room);
   }
 
   updateRoom(id: number, room: RoomDto) {

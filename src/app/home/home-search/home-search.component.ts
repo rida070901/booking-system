@@ -20,7 +20,7 @@ export class HomeSearchComponent implements OnInit{
   darkMode = input(false);
   hideGuestsInputs = signal<boolean>(false);
 
-  private searchParams: {checkIn: string; checkOut: string; adults: number; children: number} = { checkIn: '', checkOut: '', adults: 0, children: 0 };
+  private searchParams = signal<{checkIn: string; checkOut: string; adults: number; children: number}>({ checkIn: '', checkOut: '', adults: 0, children: 0 });
 
   searchForm = new FormGroup({
     dateRange: new FormControl<Date[] | null>(null, { validators: [Validators.required] }),
@@ -43,42 +43,42 @@ export class HomeSearchComponent implements OnInit{
   ngOnInit() {
     this.hideGuestsInputs.set(this.router.url.includes('/rooms'));
     // fill search-form after search-button-click (if query params exist)
-    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      if (params['checkIn'] && params['checkOut']) {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((queryParams) => {
+      if (queryParams['checkIn'] && queryParams['checkOut']) {
         this.searchForm.patchValue({
-          dateRange: [new Date(params['checkIn'] ), new Date(params['checkOut'])],
-          adults: params['adults'] ? +params['adults'] : 1,
-          children: params['children'] ? +params['children'] : 0,
+          dateRange: [new Date(queryParams['checkIn'] ), new Date(queryParams['checkOut'])],
+          adults: queryParams['adults'] ? +queryParams['adults'] : 1,
+          children: queryParams['children'] ? +queryParams['children'] : 0,
         });
       }
     });
   }
 
   onSearch() {
-    console.log('clicked onSearch()');
+    console.log('clicked onSearch() from home-search component');
     if (this.searchForm.valid) {
       const [checkIn, checkOut] = this.searchForm.value.dateRange as Date[];
       console.log('date-range clicked is: ', this.searchForm.value.dateRange)
-      this.searchParams = {
+      this.searchParams.set({
         checkIn: checkIn.toISOString().split('T')[0],
         checkOut: checkOut.toISOString().split('T')[0],
         adults: this.searchForm.value.adults!,
         children: this.searchForm.value.children!
-      };
+      });
       // route dynamically based on current url
       if (this.router.url === '/home') { //from home -> guesthouse-list
-        this.router.navigate(['/guesthouses/all'], { queryParams: this.searchParams });
+        this.router.navigate(['/guesthouses/all'], { queryParams: this.searchParams() });
       } else if (this.router.url.startsWith('/guesthouses/all')) {
         this.router.navigate([], { //in guesthouse-list -> just reload the list
           relativeTo: this.route,
-          queryParams: this.searchParams,
-          queryParamsHandling: 'merge', //merge new params without reloading cpm
+          queryParams: this.searchParams(),
+          queryParamsHandling: 'merge', //merge new params without reloading cmp
           replaceUrl: true
         });
       } else if (this.router.url.includes('/rooms')) { //in room-list -> just reload with new search data
         this.router.navigate([], {
           relativeTo: this.route,
-          queryParams: this.searchParams,
+          queryParams: this.searchParams(),
           queryParamsHandling: 'merge',
           replaceUrl: true
         });

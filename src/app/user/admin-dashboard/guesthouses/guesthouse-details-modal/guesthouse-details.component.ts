@@ -17,8 +17,8 @@ export class GuesthouseDetailsComponent implements OnInit{
   @Input() onEditMode!: boolean;
   @Input() guesthouse!: GuestHouse;
 
-  updatedGuesthouse: GuestHouseDto = {name: '', description:''}
-  newGuesthouse: GuestHouseDto = {name: '', description:''}
+  updatedGuesthouse = signal<GuestHouseDto>({name: '', description:''});
+  newGuesthouse = signal<GuestHouseDto>({name: '', description:''});
 
   onSubmitChanges = signal<boolean>(false);
   onSubmitNew = signal<boolean>(false);
@@ -49,7 +49,7 @@ export class GuesthouseDetailsComponent implements OnInit{
     }
     if (JSON.stringify(this.guesthouseForm.getRawValue()) !== JSON.stringify(this.guesthouse)) {
       this.onSubmitChanges.set(onSave);
-      this.updatedGuesthouse = this.guesthouseForm.getRawValue();
+      this.updatedGuesthouse.set(this.guesthouseForm.getRawValue());
       // console.log('this form was submitted!: ',this.guesthouseForm.value);
       // console.log('data passed from form: ',this.guesthouse);
       this.onCloseModal();
@@ -68,7 +68,7 @@ export class GuesthouseDetailsComponent implements OnInit{
     }
     if(this.guesthouseForm.valid) {
       this.onSubmitNew.set(onNew);
-      this.newGuesthouse = this.guesthouseForm.getRawValue();
+      this.newGuesthouse.set(this.guesthouseForm.getRawValue());
     }
     // console.log('this form was submitted!: ',this.guesthouseForm.value);
     // console.log('data passed from form to new guesthouse: ',this.newGuesthouse);

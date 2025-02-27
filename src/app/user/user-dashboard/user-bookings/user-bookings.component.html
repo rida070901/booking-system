@@ -114,7 +114,7 @@
         <div class="row d-flex align-items-center py-1">
           <div class="col offset-md-1">#{{ b.id > 99999 ? (b.id.toString() | slice:0:5) + '...' : b.id }}</div>
           <div class="col">
-            <img [src]="b.room.image" alt="img" >
+            <img [src]="b.room.image" alt="img" loading="lazy">
           </div>
           <div class="col">{{ b.room.name!.length > 8 ? (b.room.name | slice:0:8) + '...' : b.room.name }}</div>
           <div class="col">{{ b.bookFrom | date:'MMM d, y' }}</div>

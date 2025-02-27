@@ -1,7 +1,7 @@
 
 
 <!-- Home Section -->
-<section class="home" [ngStyle]="{ 'background-image': 'url(' + selectedImage + ')', 'background-size': 'cover', 'background-position': 'center', 'height': '100%' }">
+<section class="home" [ngStyle]="{ 'background-image': 'url(' + selectedImage() + ')', 'background-size': 'cover', 'background-position': 'center', 'height': '100%' }">
   <app-navbar></app-navbar>
   <!-- Hero Section -->
   <section class="hero d-flex align-items-center justify-content-between text-white px-5">
@@ -18,8 +18,8 @@
           [src]="img"
           class="dot-img rounded-circle"
           [style]="'width: 40px; height: 40px; transition: transform 0.3s ease-in-out;'"
-          [ngClass]="{ 'border border-light shadow-lg': selectedImage === img }"
-          (click)="selectedImage = img"
+          [ngClass]="{ 'border border-light shadow-lg': selectedImage() === img }"
+          (click)="selectedImage.set(img)"
         >
       }
     </div>

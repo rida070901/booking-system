@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login.component';
 import { authGuard } from './shared/guards/auth.guard';
 import { roleGuard } from './shared/guards/role.guard';
 import { AdminDashboardComponent } from './user/admin-dashboard/admin-dashboard.component';

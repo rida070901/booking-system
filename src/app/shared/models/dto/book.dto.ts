@@ -3,3 +3,8 @@ export interface BookDto {
   bookFrom: string;
   bookTo: string;
 }
+
+export interface BookedDate {
+  bookFrom: string;
+  bookTo: string;
+}

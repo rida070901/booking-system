@@ -59,8 +59,7 @@ export class GuesthouseListComponent implements OnInit{
 
   ngOnInit() {
 
-    //load guesthouses list
-    this.loadGuesthouses();
+    this.loadGuesthouses(); //load guesthouses list
 
     this.router.navigate([], {
       queryParams: {}, //reset query params on reload
@@ -159,13 +158,13 @@ export class GuesthouseListComponent implements OnInit{
       keyboard: false,
       initialState: {
         onEditMode: true,
-        guesthouse: guesthouse!,
+        guesthouse: guesthouse,
       }
     };
     this.modalRef = this.modalService.show(GuesthouseDetailsComponent, modalOptions);
     this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if(this.modalRef?.content.onSubmitChanges()) {
-        this.onEditGuesthouse(guesthouse.id, this.modalRef.content.updatedGuesthouse);
+        this.onEditGuesthouse(guesthouse.id, this.modalRef.content.updatedGuesthouse());
       }
     });
   }
@@ -197,13 +196,14 @@ export class GuesthouseListComponent implements OnInit{
     this.modalRef = this.modalService.show(GuesthouseDetailsComponent, modalOptions);
     this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if(this.modalRef?.content.onSubmitNew()) {
-        this.onAddGuesthouse(this.modalRef.content.newGuesthouse);
+        this.onAddGuesthouse(this.modalRef.content.newGuesthouse());
       }
     });
   }
 
   private onAddGuesthouse(guesthouse: GuestHouseDto) {
     // console.log('inside onAddGuesthouse with new: ', guesthouse);
+    this.isLoading.set(true);
     this.guesthouseService.createGuestHouse(guesthouse).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.loadGuesthouses();
     });

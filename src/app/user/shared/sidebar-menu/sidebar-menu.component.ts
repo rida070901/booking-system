@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterModule } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 
@@ -12,6 +12,6 @@ export class SidebarMenuComponent {
 
   authService = inject(AuthService);
 
-  role = this.authService.userRole();
+  role = signal< 'Admin' | 'User' | null >(this.authService.userRole());
 
 }

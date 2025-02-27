@@ -35,6 +35,7 @@
               <div class="text-danger small mt-1">
                 @if(roomForm.controls.name.errors?.['required']) { <small>Name is required.</small> }
                 @if(roomForm.controls.name.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+                @if(roomForm.controls.name.errors?.['minlength']) { <small>Min 5 characters required.</small> }
               </div>
             }
           </div>
@@ -47,6 +48,7 @@
               <div class="text-danger small mt-1">
                 @if(roomForm.controls.description.errors?.['required']) { <small>Description is required.</small> }
                 @if(roomForm.controls.description.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+                @if(roomForm.controls.description.errors?.['minlength']) { <small>Min 10 characters required.</small> }
               </div>
             }
           </div>
@@ -55,12 +57,20 @@
             <label for="price" class="form-label">Price per day</label>
             <input id="price" type="number" formControlName="price" class="form-control"
                    [class.is-invalid]="roomForm.controls.price.invalid && roomForm.controls.price.touched" />
+            <div class="text-danger small mt-1">
+              @if(roomForm.controls.price.touched && roomForm.controls.price.errors?.['min']) { <small>Price should be greater than zero.</small> }
+            </div>
           </div>
 
           <div class="mb-3">
             <label for="beds" class="form-label">Number of beds</label>
             <input id="beds" type="number" formControlName="numberOfBeds" class="form-control"
                    [class.is-invalid]="roomForm.controls.numberOfBeds.invalid && roomForm.controls.numberOfBeds.touched" />
+            <div class="text-danger small mt-1">
+              @if(roomForm.controls.numberOfBeds.touched &&
+              (roomForm.controls.numberOfBeds.errors?.['min'] || roomForm.controls.numberOfBeds.errors?.['max'] || roomForm.controls.numberOfBeds.errors?.['pattern']))
+                { <small>Number of beds should be between 1-10.</small> }
+            </div>
           </div>
 
           <div class="mb-3">
@@ -85,8 +95,8 @@
                 @if(roomForm.controls.description.errors?.['required']) { <small>Image is required.</small> }
               </div>
             }
-            @if(imagePreview) {
-              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded mt-2" />
+            @if(imagePreview()) {
+              <img [src]="imagePreview()" alt="Preview" class="img-fluid rounded my-3" />
             }
           </div>
 

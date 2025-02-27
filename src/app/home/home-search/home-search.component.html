@@ -1,7 +1,6 @@
 <div class="container-fluid py-5 px-5" [ngClass]="{ 'bg-dark text-light': darkMode(), 'bg-custom': !darkMode() }">
   <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
     <div class="row g-3">
-
       <div class="col-6">
         <label class="form-label">Select Date Range:</label>
         <input type="text" class="form-control" bsDaterangepicker [bsConfig]="datePickerConfig" formControlName="dateRange" placeholder="Select date range">
@@ -9,9 +8,7 @@
           <small class="text-danger">Check-in & check-out are required.</small>
         }
       </div>
-
       @if(!hideGuestsInputs()) {
-
         <div class="col">
           <label class="form-label">Adults:</label>
           <select class="form-select" formControlName="adults">
@@ -20,7 +17,6 @@
             }
           </select>
         </div>
-
         <div class="col">
           <label class="form-label">Children:</label>
           <select class="form-select" formControlName="children">
@@ -31,7 +27,6 @@
         </div>
 
       }
-
       <div class="col">
         <label class="form-label">Go:</label>
         <button class="btn btn-secondary w-100" type="submit" [disabled]="searchForm.invalid">SEARCH</button>

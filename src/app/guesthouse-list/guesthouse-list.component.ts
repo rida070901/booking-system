@@ -18,165 +18,167 @@ import { HomeSearchComponent } from "../home/home-search/home-search.component";
 })
 export class GuesthouseListComponent implements OnInit{
 
-    private guesthouseService = inject(GuesthouseService);
-    private destroyRef = inject(DestroyRef);
-    private router = inject(Router);
-    private route = inject(ActivatedRoute);
+  private guesthouseService = inject(GuesthouseService);
+  private destroyRef = inject(DestroyRef);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-    //data objects
-    private guesthouses: GuestHouse[] = [];
-    filteredGuesthouses: GuestHouse[] = [];
-    private selectedFilter = signal<string>('');
-    queryParams: GuestHouseParamsDto = {};
+  //data objects
+  private guesthouses: GuestHouse[] = [];
+  filteredGuesthouses: GuestHouse[] = [];
+  private selectedFilter = signal<string>('');
+  queryParams = signal<GuestHouseParamsDto>({});
 
-    //state variables
-    isLoading = signal<boolean>(false);
-    isAllGuesthouses = signal<boolean>(false);
-    currentView = signal<'all' | 'top5' | 'available'>('all');
+  //state variables
+  isLoading = signal<boolean>(false);
+  isAllGuesthouses = signal<boolean>(false);
+  currentView = signal<'all' | 'top5' | 'available'>('all');
 
-    //pagination variables
-    page: number = 1;
-    itemsPerPage = signal<number>(6);
-    perPageOptions = [6, 9, 12, 15];
+  //pagination variables
+  page: number = 1;
+  itemsPerPage = signal<number>(6);
+  perPageOptions = [6, 9, 12, 15];
 
 
-    ngOnInit() {
-      this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(queryParams => {
-        const { checkIn, checkOut, adults, children } = queryParams;
-        if (checkIn && checkOut && adults && children) {
-          this.queryParams = {
-            checkIn: checkIn,
-            checkOut: checkOut,
-            numberOfBeds: (parseInt(adults) + parseInt(children)) as number || undefined,
-          };
-          this.loadAvailableGuesthouses();
-        } else if (this.currentView() === 'top5') {
-          this.loadTop5Guesthouses();
-        } else {
-          this.loadAllGuesthouses();
-        }
-      });
-    }
-
-    private loadAllGuesthouses() {
-      this.currentView.set('all');
-      this.isLoading.set(true);
-      this.isAllGuesthouses.set(true);
-      this.guesthouseService.getAllGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.guesthouses = data;
-          this.filteredGuesthouses = data;
-          if (this.selectedFilter) this.applyFilter(this.selectedFilter());
-        },
-        error: (err) => console.log(err),
-        complete: () => {
-          this.isLoading.set(false);
-        }
-      });
-    }
-
-    private loadAvailableGuesthouses() {
-      this.currentView.set('available');
-      this.isLoading.set(true);
-      this.isAllGuesthouses.set(false);
-      this.guesthouseService.getAvailableGuestHouses(this.queryParams).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.guesthouses = data;
-          this.filteredGuesthouses = data;
-          if (this.selectedFilter) this.applyFilter(this.selectedFilter());
-        },
-        error: (err: Error) => {
-          console.log(err);
-        },
-        complete: () => {
-          this.isLoading.set(false);
-        }
-      })
-    }
-
-    private loadTop5Guesthouses (){
-      this.currentView.set('top5');
-      this.isLoading.set(true);
-      this.isAllGuesthouses.set(false);
-      this.guesthouseService.getTopFiveGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.guesthouses = data;
-          this.filteredGuesthouses = data;
-          if (this.selectedFilter) this.applyFilter(this.selectedFilter());
-        },
-        error: (err: Error) => {
-          console.log(err);
-        },
-        complete: () => {
-          this.isLoading.set(false);
-        }
-      });
-    }
-
-    showAllGuesthouses() {
-      this.loadAllGuesthouses();
-      this.router.navigate([], { //delete searchData query params
-        queryParams: {},
-        replaceUrl: true //prevents adding to browser history
-      });
-    }
-
-    showTop5Guesthouses() {
-      this.loadTop5Guesthouses();
-      this.router.navigate([], { //delete searchData query params
-        queryParams: {},
-        replaceUrl: true //prevents adding to browser history
-      });
-    }
-
-    onItemsPerPageChange(targetValue: string) {
-      this.itemsPerPage.set(Number(targetValue));
-      this.page = 1;
-    }
-
-    onSearchGuesthouse(searchTerm: string) {
-      this.filteredGuesthouses = this.guesthouses.filter(r =>
-        r.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    applyFilter(filter: string) {
-      this.selectedFilter.set(filter);
-      if (this.guesthouses) {
-        this.filteredGuesthouses = this.guesthouses.sort((a, b) => {
-          switch (filter) {
-            case 'nameAsc':
-              return a.name!.localeCompare(b.name!);
-            case 'nameDesc':
-              return b.name!.localeCompare(a.name!);
-            case 'idAsc':
-              return a.id - b.id;
-            case 'idDesc':
-              return b.id - a.id;
-            default:
-              return 0;
-          }
+  ngOnInit() {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(queryParams => {
+      const { checkIn, checkOut, adults, children } = queryParams;
+      if (checkIn && checkOut && adults && children) {
+        this.queryParams.set({
+          checkIn: checkIn,
+          checkOut: checkOut,
+          numberOfBeds: (parseInt(adults) + parseInt(children)) as number || undefined,
         });
-        this.updateQueryParams();
+        this.loadAvailableGuesthouses();
+      } else if (this.currentView() === 'top5') {
+        this.loadTop5Guesthouses();
       } else {
-        console.log('No guesthouses found');
+        this.loadAllGuesthouses();
       }
-    }
+    });
+  }
 
+  private loadAllGuesthouses() {
+    this.currentView.set('all');
+    this.isLoading.set(true);
+    this.isAllGuesthouses.set(true);
+    this.guesthouseService.getAllGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (data) => {
+        this.guesthouses = data;
+        this.filteredGuesthouses = data;
+        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
+      },
+      error: (err) => console.log(err),
+      complete: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
 
-    private updateQueryParams() {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {
-          filter: this.selectedFilter(),
-        },
-        queryParamsHandling: 'merge' // merge with existing params
+  private loadAvailableGuesthouses() {
+    this.currentView.set('available');
+    this.isLoading.set(true);
+    this.isAllGuesthouses.set(false);
+    this.guesthouseService.getAvailableGuestHouses(this.queryParams()).pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (data) => {
+        this.guesthouses = data;
+        this.filteredGuesthouses = data;
+        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
+      },
+      error: (err: Error) => {
+        console.log(err);
+      },
+      complete: () => {
+        this.isLoading.set(false);
+      }
+    })
+  }
+
+  private loadTop5Guesthouses (){
+    this.currentView.set('top5');
+    this.isLoading.set(true);
+    this.isAllGuesthouses.set(false);
+    this.guesthouseService.getTopFiveGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (data) => {
+        this.guesthouses = data;
+        this.filteredGuesthouses = data;
+        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
+      },
+      error: (err: Error) => {
+        console.log(err);
+      },
+      complete: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  showAllGuesthouses() {
+    this.loadAllGuesthouses();
+    this.router.navigate([], { //delete searchData query params
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true //prevents adding to browser history
+    });
+  }
+
+  showTop5Guesthouses() {
+    this.loadTop5Guesthouses();
+    this.router.navigate([], { //delete searchData query params
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true //prevents adding to browser history
+    });
+  }
+
+  onItemsPerPageChange(targetValue: string) {
+    this.itemsPerPage.set(Number(targetValue));
+    this.page = 1;
+  }
+
+  onSearchGuesthouse(searchTerm: string) {
+    this.filteredGuesthouses = this.guesthouses.filter(r =>
+      r.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  applyFilter(filter: string) {
+    this.selectedFilter.set(filter);
+    if (this.guesthouses) {
+      this.filteredGuesthouses = this.guesthouses.sort((a, b) => {
+        switch (filter) {
+          case 'nameAsc':
+            return a.name!.localeCompare(b.name!);
+          case 'nameDesc':
+            return b.name!.localeCompare(a.name!);
+          case 'idAsc':
+            return a.id - b.id;
+          case 'idDesc':
+            return b.id - a.id;
+          default:
+            return 0;
+        }
       });
+      this.updateQueryParams();
+    } else {
+      console.log('No guesthouses found');
     }
+  }
+
+
+  private updateQueryParams() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filter: this.selectedFilter(),
+      },
+      queryParamsHandling: 'merge' // merge with existing params
+    });
+  }
 
     // private loadGuesthouses() {
     //   this.isLoading = true;

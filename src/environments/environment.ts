@@ -1,6 +1,3 @@
-import { GuestHouseDto } from "../app/shared/models/dto/guesthouse.dto";
-
-
 export const environment = {
 
   production: false,

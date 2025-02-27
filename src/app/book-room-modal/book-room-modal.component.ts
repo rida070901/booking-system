@@ -1,7 +1,7 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
-import { BookDto } from '../shared/models/dto/book.dto';
+import { BookDto, BookedDate } from '../shared/models/dto/book.dto';
 
 @Component({
   selector: 'app-book-room-modal',
@@ -9,69 +9,61 @@ import { BookDto } from '../shared/models/dto/book.dto';
   templateUrl: './book-room-modal.component.html',
 })
 export class BookRoomModalComponent {
-
-  bsModalRef = inject(BsModalRef);
+  private bsModalRef = inject(BsModalRef);
 
   @Input() roomId!: number;
   @Input() roomName!: string;
-  @Input() bookedDates!: { bookFrom: string, bookTo: string }[];
+  @Input() bookedDates!: BookedDate[];
 
-  book: BookDto = { roomId: 0, bookFrom: '', bookTo: '' };
-  onBook: boolean = false;
-  datesDisabled: Date[] = []; //convert to Dates[] for disabled booked dates
+  book = signal<BookDto>({ roomId: 0, bookFrom: '', bookTo: '' });
+  onBook = signal<boolean>(false);
 
-  selectedRange: Date[] = [];
-  dateError: boolean = false;
-  showError: boolean = false;
-  daysOfStay: number = 0;
+  datesDisabled = signal<Date[]>([]);
+  selectedRange = signal<Date[]>([]);
+  dateError = signal<boolean>(false);
+  daysOfStay = signal<number>(0);
 
   datePickerConfig: Partial<BsDatepickerConfig> = {
     rangeInputFormat: 'YYYY-MM-DD',
     minDate: new Date(),
     dateInputFormat: 'YYYY-MM-DD',
     containerClass: 'theme-default',
-    showWeekNumbers: false
+    showWeekNumbers: false,
   };
 
   ngOnInit() {
-    this.datesDisabled = this.bookedDates.flatMap(({ bookFrom, bookTo }) =>
-      this.getDateRange(new Date(bookFrom), this.subtractOneDay(new Date(bookTo)))
-    );
+    this.datesDisabled.set(this.bookedDates.flatMap(({ bookFrom, bookTo }) =>
+      this.getDateRange(new Date(bookFrom), new Date(bookTo))
+    ));
   }
 
-  onDateChange(selected: (Date | undefined)[] | undefined) {
-    this.showError = false;
+  onDateChange(selected?: (Date | undefined)[]) {
+    this.dateError.set(false);
 
-    if (!selected || selected.length !== 2 || selected.includes(undefined)) {
-      this.selectedRange = [];
-      this.daysOfStay = 0;
+    if (!selected || selected.length !== 2 || selected.some((d) => !d) || selected[0]!.getTime() === selected[1]!.getTime()) {
+      this.selectedRange.set([]);
+      this.daysOfStay.set(0);
+      this.dateError.set(true);
       return;
     }
 
-    this.selectedRange = selected.filter(date => date !== undefined) as Date[];
-    const [start, end] = this.selectedRange;
+    const [start, end] = selected as [Date, Date];
+    this.selectedRange.set([start, end]);
 
-    this.daysOfStay = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    this.daysOfStay.set(Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
 
-    this.dateError = this.datesDisabled.some(
-      (booked) => booked >= start && booked <= end
-    );
-
-    if (this.dateError) {
-      this.showError = true;
-      this.daysOfStay = 0;
-    }
+    this.dateError.set(this.datesDisabled().some((disabledDate) => disabledDate >= start && disabledDate <= end));
   }
 
   onBookRoom() {
-    if (!this.dateError && this.selectedRange.length === 2) {
-      this.onBook = true;
-      const [bookFrom, bookTo] = this.selectedRange;
-      this.book = {
+    if (!this.dateError() && this.selectedRange().length === 2) {
+      this.onBook.set(true);
+      const [bookFrom, bookTo] = this.selectedRange();
+      this.book.set({
         roomId: this.roomId,
-        bookFrom: bookFrom.toISOString(),
-        bookTo: bookTo.toISOString()
-      }
+        bookFrom: this.formatDate(bookFrom),
+        bookTo: this.formatDate(bookTo),
+      });
       this.onCloseModal();
     }
   }
@@ -83,20 +75,21 @@ export class BookRoomModalComponent {
   // ---- helper functions for dealing with dates ---- //
 
   private getDateRange(startDate: Date, endDate: Date): Date[] {
-    const dates: Date[] = [];
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      dates.push(new Date(currentDate)); // push a new Date instance
-      currentDate.setDate(currentDate.getDate() + 1); // move to the next day
-    }
-    return dates;
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setDate(adjustedEndDate.getDate() - 1);
+    const daysCount = Math.ceil((adjustedEndDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return Array.from({ length: daysCount }, (_, i) => {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
+      return date;
+    });
   }
 
-  subtractOneDay(date: Date): Date {
-    const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() - 1);
-    return newDate;
+  private formatDate(date: Date): string { //backend receives string - exact selected dates without time/timezone considerations
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
-
 
 }

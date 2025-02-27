@@ -10,7 +10,7 @@ import { FooterComponent } from "../footer/footer.component";
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { BookRoomModalComponent } from '../book-room-modal/book-room-modal.component';
 import { BookService } from '../shared/services/book.service';
-import { BookDto } from '../shared/models/dto/book.dto';
+import { BookDto, BookedDate } from '../shared/models/dto/book.dto';
 import { HomeSearchComponent } from "../home/home-search/home-search.component";
 import { RoomParamsDto } from '../shared/models/dto/room.dto';
 import { combineLatest } from 'rxjs';
@@ -44,8 +44,7 @@ export class GuesthouseDetailsComponent implements OnInit{
   private rooms: Room[] = [];
   filteredRooms: Room[] = [];
   private selectedFilter = signal<string>('');
-  bookedDates: { bookFrom: string; bookTo: string; }[] = [];
-  queryParams: RoomParamsDto = {};
+  private queryParams = signal<RoomParamsDto>({});
 
   //state variables
   isLoadingGuesthouse = signal<boolean>(false);
@@ -63,12 +62,12 @@ export class GuesthouseDetailsComponent implements OnInit{
         this.loadGuesthouse(this.guesthouseId);
         const { checkIn, checkOut } = queryParams;
         if (checkIn && checkOut) {
-          this.queryParams = { checkIn, checkOut };
+          this.queryParams.set({ checkIn, checkOut });
           this.loadAvailableRooms(this.guesthouseId);
         } else {
           this.loadAllRooms(this.guesthouseId);
         }
-      });
+    });
   }
 
   private loadGuesthouse(guesthouseId: number) {
@@ -111,8 +110,8 @@ export class GuesthouseDetailsComponent implements OnInit{
     this.isLoadingRooms.set(true);
     this.isAllRooms.set(false);
     console.log('loading available rooms');
-    console.log(this.queryParams)
-    this.roomService.getAvailableRoomsByGuestHouse(guesthouseId, this.queryParams).pipe(takeUntilDestroyed(this.destroyRef))
+    console.log(this.queryParams())
+    this.roomService.getAvailableRoomsByGuestHouse(guesthouseId, this.queryParams()).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
         console.log(data)
@@ -148,17 +147,19 @@ export class GuesthouseDetailsComponent implements OnInit{
 
   showAllRooms() {
     this.loadAllRooms(this.guesthouseId);
-    this.router.navigate([], { //delete searchData query params
+    this.router.navigate([], {
+      relativeTo: this.route,
       queryParams: {},
-      replaceUrl: true //prevents adding to browser history
+      replaceUrl: true
     });
   }
 
   showTop5Rooms() {
     this.loadTop5Rooms();
-    this.router.navigate([], { //delete searchData query params
+    this.router.navigate([], {
+      relativeTo: this.route,
       queryParams: {},
-      replaceUrl: true //prevents adding to browser history
+      replaceUrl: true
     });
   }
 
@@ -171,23 +172,34 @@ export class GuesthouseDetailsComponent implements OnInit{
   openBookModal(roomId: number, roomName: string) {
     console.log('room id: ', roomId)
     this.isLoadingBookedDates.set(true);
-    this.bookService.getBookingByRoom(roomId).pipe(takeUntilDestroyed(this.destroyRef))
+    this.bookService.getBookedDatesByRoom(roomId).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (data) => {
-        this.bookedDates = data.map(book => ({
-          bookFrom: book.bookFrom,
-          bookTo: book.bookTo
-        }));
+      //next is triggered every time new data is emitted by the observable -> for http.get its only once with the response
+      //by the time next runs all response data is available
+      next: (bookedDates) => {
+        const modalOptions = {
+          backdrop: 'static' as const,
+          keyboard: false,
+          initialState: {
+            roomId,
+            roomName,
+            bookedDates,
+          }
+        };
+        this.modalRef = this.modalService.show(BookRoomModalComponent, modalOptions);
+        this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+          if(this.modalRef?.content.onBook()) {
+            this.onAddBook(this.modalRef?.content.book());
+          }
+        });
       },
       error: (err: Error) => {
         this.isLoadingBookedDates.set(false);
         console.log(err);
         if ((err as any).status === 401) {
-          const currentUrl = this.router.url.split('?')[0];
-          this.authService.setRedirectUrl(currentUrl); // so that onLogin redirects to /rooms
+          this.authService.setRedirectUrl(this.router.url.split('?')[0]); // so that onLogin redirects to /guesthouse/:id/rooms
           const modalRef = this.modalService.show(LoginComponent); // open login-modal
-          modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe(() => {
+          modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             if (this.authService.isAuthenticated()) { //if successful login
               this.openBookModal(roomId, roomName); // reopen modal
             }
@@ -196,23 +208,6 @@ export class GuesthouseDetailsComponent implements OnInit{
       },
       complete: () => {
         this.isLoadingBookedDates.set(false);
-        const modalOptions = {
-          backdrop: 'static' as const,
-          keyboard: false,
-          initialState: {
-            roomId: roomId! as number,
-            roomName: roomName!,
-            bookedDates: this.bookedDates,
-          }
-        };
-        this.modalRef = this.modalService.show(BookRoomModalComponent, modalOptions);
-        this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => {
-          const onBook = this.modalRef?.content.onBook;
-          if(onBook) {
-            this.onAddBook(this.modalRef?.content.book);
-          }
-        });
       }
     });
   }

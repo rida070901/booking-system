@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../shared/services/auth.service';
 import { BsModalRef } from 'ngx-bootstrap/modal';
@@ -17,12 +17,12 @@ import { passwordMatchValidator } from './password-match.validator';
 export class LoginComponent {
 
   private bsModalRef = inject(BsModalRef);
-  isLoading = false;
-  isLoginMode = true;
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
-  router = inject(Router);
-  authService = inject(AuthService);
-  destroyRef = inject(DestroyRef);
+  isLoading = signal<boolean>(false);
+  isLoginMode = signal<boolean>(true);
 
   loginForm = new FormGroup({
     email: new FormControl('', { validators: [Validators.email, Validators.required] }),
@@ -40,16 +40,16 @@ export class LoginComponent {
   }, { validators: passwordMatchValidator }); //validator added to form so it checks both psw fields for validation
 
   toggleMode() { //switch login - register mode in same modal
-    this.isLoginMode = !this.isLoginMode;
+    this.isLoginMode.set(!this.isLoginMode());
   }
 
   onLogin() {
     if (this.loginForm.invalid) return;
-    this.isLoading = true;
+    this.isLoading.set(true);
     const loginData: LoginRequest = this.loginForm.value as LoginRequest;
     this.authService.login(loginData).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response) => {
+      next: () => {
         const role = this.authService.userRole();
         const redirectUrl = this.authService.getRedirectUrl();
         this.authService.clearRedirectUrl();
@@ -58,7 +58,7 @@ export class LoginComponent {
       },
       error: (err) => this.handleFormErrors(err, this.loginForm),
       complete: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.closeModal();
       }
     });
@@ -66,7 +66,7 @@ export class LoginComponent {
 
   onRegister() {
     if (this.registerForm.invalid) return;
-    this.isLoading = true;
+    this.isLoading.set(true);
     const registerData: RegisterRequest = this.registerForm.value as RegisterRequest;
     this.authService.register(registerData).pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -75,7 +75,7 @@ export class LoginComponent {
         },
         error: (err) => this.handleFormErrors(err, this.registerForm),
         complete: () => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toggleMode();
           this.loginForm.controls.email.setValue(registerData.email);
           this.registerForm.reset();
@@ -101,7 +101,7 @@ export class LoginComponent {
     } else {
       console.error('Error: ', err.message ?? err);
     }
-    this.isLoading = false;
+    this.isLoading.set(false);
   }
 
 }

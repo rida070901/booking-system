@@ -139,7 +139,7 @@ export class RoomListComponent implements OnInit{
     this.modalRef = this.modalService.show(RoomDetailsComponent, modalOptions);
     this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if(this.modalRef?.content.onSubmitChanges()) {
-        this.onEditRoom(room.id, this.modalRef.content.room);
+        this.onEditRoom(room.id, this.modalRef.content.updatedRoom());
       }
     });
 
@@ -154,6 +154,7 @@ export class RoomListComponent implements OnInit{
       },
       error: (err) => {
         console.error('updating failed:', err);
+        this.updatingId.set(null);
       },
       complete: () => {
         this.updatingId.set(null);
@@ -173,13 +174,14 @@ export class RoomListComponent implements OnInit{
     this.modalRef = this.modalService.show(RoomDetailsComponent, modalOptions);
     this.modalRef.onHidden?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if(this.modalRef?.content.onSubmitNew()) {
-        this.onAddRoom(this.modalRef.content.newRoom);
+        this.onAddRoom(this.modalRef.content.newRoom());
       }
     });
   }
 
   private onAddRoom(room: Room) {
     console.log('inside onAdd ', room)
+    this.isLoading.set(true);
     this.roomService.createRoom(room).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.loadRooms();
     });

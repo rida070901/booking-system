@@ -73,7 +73,7 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
       @for (guesthouse of filteredGuesthouses | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track guesthouse.id) {
         <div class="col">
-          <app-guesthouse-card [guesthouse]="guesthouse" [queryParams]="queryParams"></app-guesthouse-card>
+          <app-guesthouse-card [guesthouse]="guesthouse" [queryParams]="queryParams()"></app-guesthouse-card>
         </div>
       } @empty {
         <div class="text-center text-danger">No guesthouses found.</div>

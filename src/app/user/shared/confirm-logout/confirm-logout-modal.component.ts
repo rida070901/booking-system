@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { AuthService } from '../../../shared/services/auth.service';
 
@@ -14,10 +14,10 @@ export class ConfirmLogoutModalComponent {
   private bsModalRef = inject(BsModalRef);
   private authService = inject(AuthService);
 
-  isLoggingOut = false;
+  isLoggingOut = signal<boolean>(false);
 
   async onLogout() {
-    this.isLoggingOut = true;
+    this.isLoggingOut.set(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500)); // delay is for loading effect only
       this.authService.logout();
@@ -25,7 +25,7 @@ export class ConfirmLogoutModalComponent {
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
-      this.isLoggingOut = false;
+      this.isLoggingOut.set(false);
     }
   }
 

@@ -7,6 +7,4 @@ export interface Book {
   bookFrom: string;
   bookTo: string;
   room: Room;
-  createdBy?: string | null;
-  createdDate?: string;
 }

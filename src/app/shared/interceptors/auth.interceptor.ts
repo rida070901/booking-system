@@ -4,7 +4,6 @@ import { Observable } from "rxjs";
 import { AuthService } from "../services/auth.service";
 import { environment } from "../../../environments/environment";
 
-
 export function authInterceptor(request: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> {
 
   const authService = inject(AuthService);
@@ -37,8 +36,6 @@ export function authInterceptor(request: HttpRequest<any>, next: HttpHandlerFn):
         Authorization: `Bearer ${token}`
       }
     });
-  } else if (isPublic) {
-    console.log('public request', request.url);
   }
 
   return next(request);

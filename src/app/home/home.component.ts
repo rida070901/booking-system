@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { NavbarComponent } from "../navbar/navbar.component";
 import { FooterComponent } from "../footer/footer.component";
 import { GuestHouse } from '../shared/models/guesthouse.model';
@@ -31,7 +31,7 @@ export class HomeComponent implements OnInit{
     '/assets/images/guesthouse9.PNG',
     '/assets/images/guesthouse12.PNG',
   ];
-  selectedImage = this.bgImages[0]; // default bg image
+  selectedImage = signal<string>(this.bgImages[0]); // default bg image
 
   ngOnInit() {
     this.loadTop5Guesthouses();
@@ -52,5 +52,4 @@ export class HomeComponent implements OnInit{
       }
     });
   }
-
 }

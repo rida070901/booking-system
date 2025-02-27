@@ -1,14 +1,14 @@
 <div class="modal-header border-0 pb-1">
   <h5 class="modal-title fw-semibold text-black">
-    @if (isLoginMode) { Login } @else { Register }
+    @if (isLoginMode()) { Login } @else { Register }
   </h5>
   <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
 </div>
 
 <div class="modal-body px-4" style="max-height: 550px; overflow-y: auto;">
-  @let form = isLoginMode ? loginForm : registerForm;
+  @let form = isLoginMode() ? loginForm : registerForm;
   <form [formGroup]="form">
-    @if (!isLoginMode) {
+    @if (!isLoginMode()) {
       <div class="mb-3">
         <label class="form-label text-black small fw-normal">Username</label>
         <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
@@ -73,7 +73,7 @@
              formControlName="password" placeholder="enter password">
 
       @if (form.controls.password.touched && form.controls.password.invalid) {
-        @if (isLoginMode) {
+        @if (isLoginMode()) {
           <div class="text-danger small mt-1">Password is required.</div>
         } @else {
           <div class="text-danger small mt-1">
@@ -90,7 +90,7 @@
       }
     </div>
 
-    @if (!isLoginMode) {
+    @if (!isLoginMode()) {
       <div class="mb-3">
         <label class="form-label text-black small fw-normal">Confirm Password</label>
         <input type="password" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
@@ -101,22 +101,22 @@
       </div>
     }
 
-    @if (loginForm.controls.password.hasError('invalidCredentials') && isLoginMode) {
+    @if (loginForm.controls.password.hasError('invalidCredentials') && isLoginMode()) {
       <div class="text-danger small mt-1 mb-3">Invalid email or password.</div>
     }
 
     <div class="d-flex justify-content-between">
       <button type="button" class="btn btn-outline-secondary btn-sm rounded-3 px-3" (click)="toggleMode()">
-        @if (isLoginMode) { Create Account } @else { Back to Login }
+        @if (isLoginMode()) { Create Account } @else { Back to Login }
       </button>
       <button type="submit" class="btn btn-dark btn-sm rounded-3 px-3 d-flex align-items-center gap-2"
-              [disabled]="form.invalid || isLoading"
-              (click)="isLoginMode ? onLogin() : onRegister()">
-        @if (isLoading) {
+              [disabled]="form.invalid || isLoading()"
+              (click)="isLoginMode() ? onLogin() : onRegister()">
+        @if (isLoading()) {
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <span>@if (isLoginMode) { Logging in... } @else { Registering... }</span>
+          <span>@if (isLoginMode()) { Logging in... } @else { Registering... }</span>
         } @else {
-          <span>@if (isLoginMode) { Login } @else { Register }</span>
+          <span>@if (isLoginMode()) { Login } @else { Register }</span>
         }
       </button>
     </div>
