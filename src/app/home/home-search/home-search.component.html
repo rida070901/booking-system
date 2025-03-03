@@ -1,5 +1,5 @@
 <div class="container-fluid py-5 px-5" [ngClass]="{ 'bg-dark text-light': darkMode(), 'bg-custom': !darkMode() }">
-  <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+  <form [formGroup]="searchForm">
     <div class="row g-3">
       <div class="col-6">
         <label class="form-label">Select Date Range:</label>
@@ -10,26 +10,69 @@
       </div>
       @if(!hideGuestsInputs()) {
         <div class="col">
-          <label class="form-label">Adults:</label>
-          <select class="form-select" formControlName="adults">
-            @for (adult of adultsOptions; track $index) {
-              <option [value]="adult">{{ adult }}</option>
-            }
-          </select>
+          <label class="form-label">Guests:</label>
+          <div class="dropdown">
+            <button class="btn dropdown-toggle" type="button" style="border-color: white; background-color: white; color: black;" data-bs-toggle="dropdown">
+              {{ searchForm.get('guests.adults')!.value }} adults ·
+              {{ searchForm.get('guests.children')!.value }} children ·
+              {{ searchForm.get('guests.rooms')!.value }} rooms
+            </button>
+            <div class="dropdown-menu px-2 py-1" style="font-weight: normal; width: 250px;" (click)="$event.stopPropagation()">
+              <div class="row g-1">
+                <div class="col-12 d-flex align-items-center justify-content-between">
+                  <span>Adults</span>
+                  <div class="input-group input-group-sm" style="width: 80px;">
+                    <button class="btn btn-outline-secondary px-2"
+                            (click)="searchForm.get('guests.adults')!.setValue(searchForm.get('guests.adults')!.value - 1)"
+                            [disabled]="searchForm.get('guests.adults')!.value <= 1">
+                      −
+                    </button>
+                    <span class="form-control text-center px-1">{{ searchForm.get('guests.adults')!.value }}</span>
+                    <button class="btn btn-outline-secondary px-2"
+                            (click)="searchForm.get('guests.adults')!.setValue(searchForm.get('guests.adults')!.value + 1)">
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div class="col-12 d-flex align-items-center justify-content-between">
+                  <span>Children</span>
+                  <div class="input-group input-group-sm" style="width: 80px;">
+                    <button class="btn btn-outline-secondary px-2"
+                            (click)="searchForm.get('guests.children')!.setValue(searchForm.get('guests.children')!.value - 1)"
+                            [disabled]="searchForm.get('guests.children')!.value <= 0">
+                      −
+                    </button>
+                    <span class="form-control text-center px-1">{{ searchForm.get('guests.children')!.value }}</span>
+                    <button class="btn btn-outline-secondary px-2"
+                            (click)="searchForm.get('guests.children')!.setValue(searchForm.get('guests.children')!.value + 1)"
+                            [disabled]="searchForm.get('guests.children')!.value >= 2">
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div class="col-12 d-flex align-items-center justify-content-between">
+                  <span>Rooms</span>
+                  <div class="input-group input-group-sm" style="width: 80px;">
+                    <button class="btn btn-outline-secondary px-2"
+                            (click)="searchForm.get('guests.rooms')!.setValue(searchForm.get('guests.rooms')!.value - 1)"
+                            [disabled]="searchForm.get('guests.rooms')!.value <= 1">
+                      −
+                    </button>
+                    <span class="form-control text-center px-1">{{ searchForm.get('guests.rooms')!.value }}</span>
+                    <button class="btn btn-outline-secondary px-2"
+                            (click)="searchForm.get('guests.rooms')!.setValue(searchForm.get('guests.rooms')!.value + 1)">
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col">
-          <label class="form-label">Children:</label>
-          <select class="form-select" formControlName="children">
-            @for (child of childrenOptions; track $index) {
-              <option [value]="child">{{ child }}</option>
-            }
-          </select>
-        </div>
-
       }
       <div class="col">
         <label class="form-label">Go:</label>
-        <button class="btn btn-secondary w-100" type="submit" [disabled]="searchForm.invalid">SEARCH</button>
+        <button class="btn btn-secondary w-100" type="submit" [disabled]="searchForm.invalid" (click)="onSearch()">SEARCH</button>
       </div>
 
     </div>

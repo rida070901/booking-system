@@ -10,10 +10,9 @@ import { FooterComponent } from "../footer/footer.component";
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { BookRoomModalComponent } from '../book-room-modal/book-room-modal.component';
 import { BookService } from '../shared/services/book.service';
-import { BookDto, BookedDate } from '../shared/models/dto/book.dto';
+import { BookDto } from '../shared/models/dto/book.dto';
 import { HomeSearchComponent } from "../home/home-search/home-search.component";
 import { RoomParamsDto } from '../shared/models/dto/room.dto';
-import { combineLatest } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../shared/services/auth.service';
@@ -45,6 +44,7 @@ export class GuesthouseDetailsComponent implements OnInit{
   filteredRooms: Room[] = [];
   private selectedFilter = signal<string>('');
   private queryParams = signal<RoomParamsDto>({});
+  //private queryParams = signal<RoomParamsDto>({});
 
   //state variables
   isLoadingGuesthouse = signal<boolean>(false);
@@ -55,18 +55,23 @@ export class GuesthouseDetailsComponent implements OnInit{
 
 
   ngOnInit() {
-    combineLatest([this.route.params, this.route.queryParams])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(([params, queryParams]) => {
-        this.guesthouseId = +params['id'];
-        this.loadGuesthouse(this.guesthouseId);
+    console.log('ngOnInit: RELOADING COMPONENT');
+    this.guesthouseId = +this.route.snapshot.params['id'];
+    this.loadGuesthouse(this.guesthouseId);
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((queryParams) => {
+        console.log('ngOnInit: INSIDE SUBSCRIBTION QUERYPARAMS');
         const { checkIn, checkOut } = queryParams;
-        if (checkIn && checkOut) {
+        console.log('queryParams gotten: ', checkIn, 'and ', checkOut);
+        console.log('prev params are: ', this.queryParams().checkIn, 'and ', this.queryParams().checkOut);
+        if((checkIn && checkOut ) && (checkIn != this.queryParams().checkIn || checkOut != this.queryParams().checkOut)) {
           this.queryParams.set({ checkIn, checkOut });
-          this.loadAvailableRooms(this.guesthouseId);
-        } else {
+          this.loadAvailableRooms(this.guesthouseId, { checkIn, checkOut });
+        }
+        else if(!this.rooms.length){ //coming from view-all-rooms
           this.loadAllRooms(this.guesthouseId);
         }
+        if (this.selectedFilter()) this.applyFilter(this.selectedFilter()); //filter without api call
     });
   }
 
@@ -95,7 +100,6 @@ export class GuesthouseDetailsComponent implements OnInit{
       next: (data) => {
         this.rooms = data;
         this.filteredRooms = data;
-        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
       },
       error: (err: Error) => {
         console.log(err);
@@ -106,18 +110,15 @@ export class GuesthouseDetailsComponent implements OnInit{
     });
   }
 
-  private loadAvailableRooms (guesthouseId: number){
+  private loadAvailableRooms (guesthouseId: number, params: RoomParamsDto){
     this.isLoadingRooms.set(true);
     this.isAllRooms.set(false);
     console.log('loading available rooms');
-    console.log(this.queryParams())
-    this.roomService.getAvailableRoomsByGuestHouse(guesthouseId, this.queryParams()).pipe(takeUntilDestroyed(this.destroyRef))
+    this.roomService.getAvailableRoomsByGuestHouse(guesthouseId, params).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
-        console.log(data)
         this.rooms = data;
         this.filteredRooms = data;
-        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
       },
       error: (err: Error) => {
         console.log(err);
@@ -147,6 +148,8 @@ export class GuesthouseDetailsComponent implements OnInit{
 
   showAllRooms() {
     this.loadAllRooms(this.guesthouseId);
+    this.selectedFilter.set('');
+    this.queryParams.set({});
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
@@ -156,6 +159,8 @@ export class GuesthouseDetailsComponent implements OnInit{
 
   showTop5Rooms() {
     this.loadTop5Rooms();
+    this.selectedFilter.set('');
+    this.queryParams.set({});
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
@@ -270,8 +275,8 @@ export class GuesthouseDetailsComponent implements OnInit{
       queryParams: {
         filter: this.selectedFilter(),
       },
-      queryParamsHandling: 'merge', // merge with existing params
-      replaceUrl: true, //dont add url to browser history
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
   }
 

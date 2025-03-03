@@ -6,6 +6,8 @@ import { RegisterRequest } from '../models/register-request.model';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { tap } from 'rxjs';
+import { LoginComponent } from '../../login/login.component';
+import { BsModalService } from 'ngx-bootstrap/modal';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +15,7 @@ import { tap } from 'rxjs';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private modalService = inject(BsModalService);
   private jwtHelper = new JwtHelperService();
   private baseUrl = environment.apiUrl;
 
@@ -76,8 +79,25 @@ export class AuthService {
 
   logout() {
     // this.isLoggedInSubject.next(false); // emit logout event
-    this.clearSession();
-    this.router.navigate(['/home']);
+    if(this.userRole() === 'User'){
+      console.log('inside user role check')
+      this.clearSession();
+      this.router.navigate(['/home']);
+    }
+    else if(this.userRole() === 'Admin') {
+      console.log('inside admin role check')
+      this.clearSession();
+      this.router.navigateByUrl('/', {skipLocationChange: true}).then(() => {
+        this.router.navigate(['/admin']);
+      });
+      // this.modalService.show(LoginComponent);
+    }
+  }
+
+  private triggerLoginModal() {
+    setTimeout(() => {
+      this.modalService.show(LoginComponent);
+    }, 100); // Small delay to ensure UI updates first
   }
 
   private clearSession() {

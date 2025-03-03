@@ -20,12 +20,15 @@ export class HomeSearchComponent implements OnInit{
   darkMode = input(false);
   hideGuestsInputs = signal<boolean>(false);
 
-  private searchParams = signal<{checkIn: string; checkOut: string; adults: number; children: number}>({ checkIn: '', checkOut: '', adults: 0, children: 0 });
+  private searchParams = signal<{checkIn: string; checkOut: string; adults: number; children: number, rooms: number}>({ checkIn: '', checkOut: '', adults: 0, children: 0, rooms:0 });
 
   searchForm = new FormGroup({
     dateRange: new FormControl<Date[] | null>(null, { validators: [Validators.required] }),
-    adults: new FormControl(1, { validators: [Validators.required, Validators.min(1)] }),
-    children: new FormControl(0, { validators: [Validators.required, Validators.min(0)] })
+    guests: new FormGroup({
+      adults: new FormControl(1, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
+      children: new FormControl(0, { nonNullable: true, validators: [Validators.required, Validators.min(0), Validators.max(2)] }),
+      rooms: new FormControl(1, { nonNullable: true, validators: [Validators.required, Validators.min(1)] })
+    })
   });
 
   adultsOptions = [1, 2, 3, 4];
@@ -47,8 +50,11 @@ export class HomeSearchComponent implements OnInit{
       if (queryParams['checkIn'] && queryParams['checkOut']) {
         this.searchForm.patchValue({
           dateRange: [new Date(queryParams['checkIn'] ), new Date(queryParams['checkOut'])],
-          adults: queryParams['adults'] ? +queryParams['adults'] : 1,
-          children: queryParams['children'] ? +queryParams['children'] : 0,
+          guests: {
+            adults: queryParams['adults'] ? +queryParams['adults'] : 1,
+            children: queryParams['children'] ? +queryParams['children'] : 0,
+            rooms: queryParams['rooms'] ? +queryParams['rooms'] : 1,
+          }
         });
       }
     });
@@ -62,29 +68,28 @@ export class HomeSearchComponent implements OnInit{
       this.searchParams.set({
         checkIn: checkIn.toISOString().split('T')[0],
         checkOut: checkOut.toISOString().split('T')[0],
-        adults: this.searchForm.value.adults!,
-        children: this.searchForm.value.children!
+        adults: this.searchForm.value.guests!.adults!,
+        children: this.searchForm.value.guests!.children!,
+        rooms: this.searchForm.value.guests!.rooms!,
       });
       // route dynamically based on current url
       if (this.router.url === '/home') { //from home -> guesthouse-list
         this.router.navigate(['/guesthouses/all'], { queryParams: this.searchParams() });
-      } else if (this.router.url.startsWith('/guesthouses/all')) {
-        this.router.navigate([], { //in guesthouse-list -> just reload the list
-          relativeTo: this.route,
-          queryParams: this.searchParams(),
-          queryParamsHandling: 'merge', //merge new params without reloading cmp
-          replaceUrl: true
-        });
-      } else if (this.router.url.includes('/rooms')) { //in room-list -> just reload with new search data
-        this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: this.searchParams(),
-          queryParamsHandling: 'merge',
-          replaceUrl: true
-        });
+      }
+      else { //same cmp -> stay same cmp & just update queryParams
+        this.updateQueryParams(this.searchParams());
       }
     } else {
       console.log('Form is invalid');
     }
+  }
+
+  updateQueryParams(params: {checkIn: string; checkOut: string; adults: number; children: number}) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    })
   }
 }

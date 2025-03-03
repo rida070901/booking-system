@@ -18,6 +18,11 @@ export class BookService {
     return this.http.get<Book[]>(`${this.baseUrl}${environment.endpoints.bookings.getByRoom(roomId)}`);
   }
 
+  getBookingCountByRoom(roomId: number) {
+    return this.http.get<Book[]>(`${this.baseUrl}${environment.endpoints.bookings.getByRoom(roomId)}`)
+    .pipe(map((bookings) => bookings.length));
+  }
+
   getBookedDatesByRoom(roomId: number) {
     return this.http.get<Book[]>(`${this.baseUrl}${environment.endpoints.bookings.getByRoom(roomId)}`)
     .pipe(

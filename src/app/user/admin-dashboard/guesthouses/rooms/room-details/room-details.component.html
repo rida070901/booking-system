@@ -28,7 +28,7 @@
           </div>
 
           <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
+            <label for="name" class="form-label">Name: *</label>
             <input id="name" type="text" formControlName="name" class="form-control"
                    [class.is-invalid]="roomForm.controls.name.invalid && roomForm.controls.name.touched" />
             @if(roomForm.controls.name.invalid && roomForm.controls.name.touched) {
@@ -41,7 +41,7 @@
           </div>
 
           <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
+            <label for="description" class="form-label">Description: *</label>
             <textarea id="description" formControlName="description" class="form-control"
                       [class.is-invalid]="roomForm.controls.description.invalid && roomForm.controls.description.touched"></textarea>
             @if(roomForm.controls.description.invalid && roomForm.controls.description.touched) {
@@ -54,7 +54,7 @@
           </div>
 
           <div class="mb-3">
-            <label for="price" class="form-label">Price per day</label>
+            <label for="price" class="form-label">Price per day: *</label>
             <input id="price" type="number" formControlName="price" class="form-control"
                    [class.is-invalid]="roomForm.controls.price.invalid && roomForm.controls.price.touched" />
             <div class="text-danger small mt-1">
@@ -63,13 +63,13 @@
           </div>
 
           <div class="mb-3">
-            <label for="beds" class="form-label">Number of beds</label>
+            <label for="beds" class="form-label">Number of beds: *</label>
             <input id="beds" type="number" formControlName="numberOfBeds" class="form-control"
                    [class.is-invalid]="roomForm.controls.numberOfBeds.invalid && roomForm.controls.numberOfBeds.touched" />
             <div class="text-danger small mt-1">
               @if(roomForm.controls.numberOfBeds.touched &&
               (roomForm.controls.numberOfBeds.errors?.['min'] || roomForm.controls.numberOfBeds.errors?.['max'] || roomForm.controls.numberOfBeds.errors?.['pattern']))
-                { <small>Number of beds should be between 1-10.</small> }
+                { <small>Number of beds is required (between 1 - 10).</small> }
             </div>
           </div>
 
@@ -87,7 +87,7 @@
           </div>
 
           <div class="mb-3">
-            <label for="image" class="form-label">Image</label>
+            <label for="image" class="form-label">Image: *</label>
             <input id="image" type="file" accept="image/jpeg" class="form-control" (change)="onFileSelected($event)"
                    [class.is-invalid]="roomForm.controls.image.invalid && roomForm.controls.image.touched" />
             @if(roomForm.controls.image.invalid && roomForm.controls.image.touched) {

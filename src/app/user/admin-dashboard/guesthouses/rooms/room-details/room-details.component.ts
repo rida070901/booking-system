@@ -117,6 +117,7 @@ export class RoomDetailsComponent implements OnInit{
   onSubmit(onNew: boolean){
     if(this.roomForm.invalid){
       console.log('INVALID FORM: form has empty or invalid fields');
+      this.roomForm?.markAllAsTouched();
       this.submitErrorMsg.set(true);
       return;
     }

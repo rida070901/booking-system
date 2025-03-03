@@ -1,5 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
@@ -10,6 +10,9 @@ import { Room } from '../../../../../shared/models/room.model';
 import { RoomService } from '../../../../../shared/services/room.service';
 import { ConfirmDeleteModalComponent } from '../../../../shared/confirm-delete/confirm-delete-modal.component';
 import { RoomDto } from '../../../../../shared/models/dto/room.dto';
+import { GuesthouseService } from '../../../../../shared/services/guesthouse.service';
+import { BookService } from '../../../../../shared/services/book.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-room-list',
@@ -19,18 +22,22 @@ import { RoomDto } from '../../../../../shared/models/dto/room.dto';
 })
 export class RoomListComponent implements OnInit{
 
-  private guesthouseId: string | null = null;
+  private guesthouseId: number | null = null;
   private roomService = inject(RoomService);
+  private guesthouseService = inject(GuesthouseService);
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute); //to get guesthouseId & query params (for the sorting)
   private router = inject(Router); //update/reset query params
+  private toastr = inject(ToastrService);
 
   //data holding objects
   private rooms: Room[] = [];
   filteredRooms: Room[] = [];
+  guesthouseName = signal<string | null>('');
 
   //state variables
   isLoading = signal<boolean>(false);
+  creatingNew = signal<boolean>(false);
   deletingId = signal<number | null>(null);
   updatingId = signal<number | null>(null);
 
@@ -42,21 +49,19 @@ export class RoomListComponent implements OnInit{
   idSort = signal<'asc' | 'desc' | null>(null);
   nameSort = signal<'asc' | 'desc' | null>(null);
   priceSort = signal<'asc' | 'desc' | null>(null);
-  guesthouseIdSort = signal<'asc' | 'desc' | null>(null);
 
   //pagination variables
   page: number = 1;
   itemsPerPage = signal<number>(5);
-  perPageOptions = [6, 9, 12, 15];
+  perPageOptions = [5, 9, 12, 15];
 
   ngOnInit() {
-    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
-      this.guesthouseId = params.get('id');
-      if(this.guesthouseId) {
-        console.log('guesthouse id passed to room-list: ', this.guesthouseId);
-      }
-    })
+    this.guesthouseId = +this.route.snapshot.params['id'];
+    if(this.guesthouseId) {
+      console.log('guesthouse id passed to room-list: ', this.guesthouseId);
+    }
     this.loadRooms();
+    this.loadGuesthouseName();
     this.router.navigate([], { //reset query params on reload
       queryParams: {},
       replaceUrl: true
@@ -66,7 +71,7 @@ export class RoomListComponent implements OnInit{
 
   private loadRooms() {
     this.isLoading.set(true);
-    this.roomService.getRoomsByGuestHouse(parseInt(this.guesthouseId!)).pipe(takeUntilDestroyed(this.destroyRef))
+    this.roomService.getRoomsByGuestHouse(this.guesthouseId!).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
         this.rooms = data;
@@ -77,6 +82,19 @@ export class RoomListComponent implements OnInit{
       },
       complete: () => {
         this.isLoading.set(false);
+        this.showRecentlyAdded();
+      }
+    });
+  }
+
+  private loadGuesthouseName() {
+    this.guesthouseService.getGuestHouseById(this.guesthouseId!).pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (guesthouse) => {
+        this.guesthouseName.set(guesthouse.name);
+      },
+      error: (err: Error) => {
+        console.error(err);
       }
     });
   }
@@ -116,10 +134,13 @@ export class RoomListComponent implements OnInit{
     this.deletingId.set(roomId);
     this.roomService.deleteRoom(roomId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.loadRooms();
+        // this.loadRooms();
+        this. rooms = [...this.rooms.filter((room) => room.id !== roomId)];
+        this. filteredRooms = [...this.filteredRooms.filter((room) => room.id !== roomId)];
       },
       error: (err) => {
         console.error('deleting failed:', err);
+        this.deletingId.set(null);
       },
       complete: () => {
         this.deletingId.set(null);
@@ -150,7 +171,30 @@ export class RoomListComponent implements OnInit{
     this.updatingId.set(roomId);
     this.roomService.updateRoom(roomId, room).subscribe({
       next: () => {
-        this.loadRooms();
+        // this.loadRooms();
+        // const updatedRoom = this.rooms.find((room) => room.id === roomId)
+        this.rooms.map((r) => {
+          if(r.id === roomId) {
+            r.name = room.name!,
+            r.description = room.description!,
+            r.image = 'data:image/jpeg;base64,' + room.image!,
+            r.price = room.price!,
+            r.numberOfBeds = room.numberOfBeds!,
+            r.amenities = room.amenities!
+            return;
+          }
+        });
+        this.filteredRooms.map((r) => {
+          if(r.id === roomId) {
+            r.name = room.name!,
+            r.description = room.description!,
+            r.image = 'data:image/jpeg;base64,' + room.image!,
+            r.price = room.price!,
+            r.numberOfBeds = room.numberOfBeds!,
+            r.amenities = room.amenities!
+            return;
+          }
+        });
       },
       error: (err) => {
         console.error('updating failed:', err);
@@ -168,7 +212,7 @@ export class RoomListComponent implements OnInit{
       keyboard: false,
       initialState: {
         onEditMode: false,
-        guesthouseId: parseInt(this.guesthouseId!)
+        guesthouseId: this.guesthouseId!
       }
     };
     this.modalRef = this.modalService.show(RoomDetailsComponent, modalOptions);
@@ -181,9 +225,29 @@ export class RoomListComponent implements OnInit{
 
   private onAddRoom(room: Room) {
     console.log('inside onAdd ', room)
-    this.isLoading.set(true);
-    this.roomService.createRoom(room).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.loadRooms();
+    this.creatingNew.set(true);
+    this.roomService.createRoom(room).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        // this.rooms = [...this.rooms, room];
+        // this.filteredRooms = [...this.filteredRooms, room];
+        this.toastr.success('Successfully added!', '', {
+          positionClass: 'toast-center-center',
+          timeOut: 2500,
+          progressBar: true,
+          closeButton: true,
+          easeTime: 300,
+          easing: 'ease-in',
+        });
+        this.loadRooms();
+
+      },
+      error: (err) => {
+        console.error('adding new room failed:', err);
+        this.creatingNew.set(false);
+      },
+      complete: () => {
+        this.creatingNew.set(false);
+      }
     });
   }
 
@@ -191,13 +255,6 @@ export class RoomListComponent implements OnInit{
     const currentSort = this.idSort();
     this.roomService.sortById(this.filteredRooms, currentSort);
     this.idSort.set(currentSort === null ? 'desc' : (currentSort === 'asc' ? 'desc' : 'asc'));
-    this.updateQueryParams();
-  }
-
-  sortByGuesthouseId() {
-    const currentSort = this.guesthouseIdSort();
-    this.roomService.sortByGuesthouseId(this.filteredRooms, currentSort);
-    this.guesthouseIdSort.set(currentSort === null ? 'desc' : (currentSort === 'asc' ? 'desc' : 'asc'));
     this.updateQueryParams();
   }
 
@@ -223,7 +280,6 @@ export class RoomListComponent implements OnInit{
         id: this.idSort(),
         name: this.nameSort(),
         price: this.priceSort(),
-        guesthouse: this.guesthouseIdSort(),
       },
       queryParamsHandling: 'merge' // merge with existing params
     });

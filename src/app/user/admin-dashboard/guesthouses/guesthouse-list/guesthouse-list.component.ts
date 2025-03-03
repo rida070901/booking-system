@@ -10,6 +10,7 @@ import { GuesthouseService } from '../../../../shared/services/guesthouse.servic
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GuestHouseDto } from '../../../../shared/models/dto/guesthouse.dto';
+import { ToastrService } from 'ngx-toastr';
 
 
 @Component({
@@ -26,6 +27,8 @@ export class GuesthouseListComponent implements OnInit{
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastr = inject(ToastrService);
+
 
   //data holding objects
   private guesthouses: GuestHouse[] = []; //has all guesthouses
@@ -36,6 +39,7 @@ export class GuesthouseListComponent implements OnInit{
 
   //state variables
   isLoading = signal<boolean>(false);
+  creatingNew = signal<boolean>(false);
   deletingId = signal<number | null>(null);
   updatingId = signal<number | null>(null);
 
@@ -100,6 +104,7 @@ export class GuesthouseListComponent implements OnInit{
       },
       complete: () => {
         this.isLoading.set(false);
+        this.showRecentlyAdded();
       }
     }
     );
@@ -140,10 +145,13 @@ export class GuesthouseListComponent implements OnInit{
     this.deletingId.set(guesthouseId);
     this.guesthouseService.deleteGuestHouse(guesthouseId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.loadGuesthouses(); //refresh list
+        //this.loadGuesthouses(); //refresh list
+        this. guesthouses = [...this.guesthouses.filter((g) => g.id !== guesthouseId)];
+        this. filteredGuesthouses = [...this.filteredGuesthouses.filter((g) => g.id !== guesthouseId)];
       },
       error: (err) => {
         console.error('deleting failed:', err);
+        this.deletingId.set(null);
       },
       complete: () => {
         this.deletingId.set(null);
@@ -174,10 +182,25 @@ export class GuesthouseListComponent implements OnInit{
     this.guesthouseService.updateGuestHouse(guesthouseId, guesthouse).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: () => {
-        this.loadGuesthouses(); //refresh list
+        //this.loadGuesthouses(); //refresh list
+        this.guesthouses.map((g) => {
+          if(g.id === guesthouseId) {
+            g.name = guesthouse.name!;
+            g.description = guesthouse.description!;
+            return;
+          }
+        });
+        this.filteredGuesthouses.map((g) => {
+          if(g.id === guesthouseId) {
+            g.name = guesthouse.name!;
+            g.description = guesthouse.description!;
+            return;
+          }
+        });
       },
       error: (err) => {
         console.error('updating failed:', err);
+        this.updatingId.set(null);
       },
       complete: () => {
         this.updatingId.set(null);
@@ -203,9 +226,28 @@ export class GuesthouseListComponent implements OnInit{
 
   private onAddGuesthouse(guesthouse: GuestHouseDto) {
     // console.log('inside onAddGuesthouse with new: ', guesthouse);
-    this.isLoading.set(true);
-    this.guesthouseService.createGuestHouse(guesthouse).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.loadGuesthouses();
+    this.creatingNew.set(true);
+    this.guesthouseService.createGuestHouse(guesthouse).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        // this.rooms = [...this.rooms, room];
+        // this.filteredRooms = [...this.filteredRooms, room];
+        this.toastr.success('Successfully added!', '', {
+          positionClass: 'toast-center-center',
+          timeOut: 2500,
+          progressBar: true,
+          closeButton: true,
+          easeTime: 300,
+          easing: 'ease-in',
+        });
+        this.loadGuesthouses();
+      },
+      error: (err) => {
+        console.error('adding new guesthouse failed:', err);
+        this.creatingNew.set(false);
+      },
+      complete: () => {
+        this.creatingNew.set(false);
+      }
     });
   }
 

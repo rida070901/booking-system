@@ -1,3 +1,4 @@
+import { GuestHouseParamsDto } from './../shared/models/dto/guesthouse.dto';
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { GuesthouseService } from '../shared/services/guesthouse.service';
 import { GuestHouse } from '../shared/models/guesthouse.model';
@@ -6,7 +7,6 @@ import { NavbarComponent } from "../navbar/navbar.component";
 import { NgxPaginationModule } from 'ngx-pagination';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FooterComponent } from "../footer/footer.component";
-import { GuestHouseParamsDto } from '../shared/models/dto/guesthouse.dto';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HomeSearchComponent } from "../home/home-search/home-search.component";
 
@@ -32,7 +32,6 @@ export class GuesthouseListComponent implements OnInit{
   //state variables
   isLoading = signal<boolean>(false);
   isAllGuesthouses = signal<boolean>(false);
-  currentView = signal<'all' | 'top5' | 'available'>('all');
 
   //pagination variables
   page: number = 1;
@@ -41,26 +40,28 @@ export class GuesthouseListComponent implements OnInit{
 
 
   ngOnInit() {
+    console.log('ngOnInit: RELOADING COMPONENT');
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(queryParams => {
-      const { checkIn, checkOut, adults, children } = queryParams;
-      if (checkIn && checkOut && adults && children) {
+    .subscribe((queryParams) => {
+      console.log('ngOnInit: INSIDE SUBSCRIBTION QUERYPARAMS');
+      const { checkIn, checkOut, adults, rooms } = queryParams;
+      console.log('queryParams gotten: ', checkIn, checkOut, adults, rooms);
+      if ((checkIn && checkOut && adults) && (checkIn != this.queryParams().checkIn || checkOut != this.queryParams().checkOut || adults != this.queryParams().numberOfBeds)) {
         this.queryParams.set({
           checkIn: checkIn,
           checkOut: checkOut,
-          numberOfBeds: (parseInt(adults) + parseInt(children)) as number || undefined,
+          numberOfBeds: adults,
         });
-        this.loadAvailableGuesthouses();
-      } else if (this.currentView() === 'top5') {
-        this.loadTop5Guesthouses();
-      } else {
+        this.loadAvailableGuesthouses(this.queryParams());
+      } else if(!this.guesthouses.length){ //coming from all-guesthouses
         this.loadAllGuesthouses();
       }
+      if (this.selectedFilter()) this.applyFilter(this.selectedFilter()); //filter without api call
     });
   }
 
   private loadAllGuesthouses() {
-    this.currentView.set('all');
+    console.log('loading all guesthouses')
     this.isLoading.set(true);
     this.isAllGuesthouses.set(true);
     this.guesthouseService.getAllGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
@@ -68,7 +69,6 @@ export class GuesthouseListComponent implements OnInit{
       next: (data) => {
         this.guesthouses = data;
         this.filteredGuesthouses = data;
-        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
       },
       error: (err) => console.log(err),
       complete: () => {
@@ -77,16 +77,15 @@ export class GuesthouseListComponent implements OnInit{
     });
   }
 
-  private loadAvailableGuesthouses() {
-    this.currentView.set('available');
+  private loadAvailableGuesthouses(params: GuestHouseParamsDto) {
+    console.log('loading available guesthouses')
     this.isLoading.set(true);
     this.isAllGuesthouses.set(false);
-    this.guesthouseService.getAvailableGuestHouses(this.queryParams()).pipe(takeUntilDestroyed(this.destroyRef))
+    this.guesthouseService.getAvailableGuestHouses(params).pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {
         this.guesthouses = data;
         this.filteredGuesthouses = data;
-        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
       },
       error: (err: Error) => {
         console.log(err);
@@ -98,7 +97,7 @@ export class GuesthouseListComponent implements OnInit{
   }
 
   private loadTop5Guesthouses (){
-    this.currentView.set('top5');
+    console.log('loading top-5 guesthouses')
     this.isLoading.set(true);
     this.isAllGuesthouses.set(false);
     this.guesthouseService.getTopFiveGuestHouses().pipe(takeUntilDestroyed(this.destroyRef))
@@ -106,7 +105,6 @@ export class GuesthouseListComponent implements OnInit{
       next: (data) => {
         this.guesthouses = data;
         this.filteredGuesthouses = data;
-        if (this.selectedFilter) this.applyFilter(this.selectedFilter());
       },
       error: (err: Error) => {
         console.log(err);
@@ -119,19 +117,23 @@ export class GuesthouseListComponent implements OnInit{
 
   showAllGuesthouses() {
     this.loadAllGuesthouses();
-    this.router.navigate([], { //delete searchData query params
+    this.selectedFilter.set('');
+    this.queryParams.set({});
+    this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
-      replaceUrl: true //prevents adding to browser history
+      replaceUrl: true
     });
   }
 
   showTop5Guesthouses() {
     this.loadTop5Guesthouses();
-    this.router.navigate([], { //delete searchData query params
+    this.selectedFilter.set('');
+    this.queryParams.set({});
+    this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
-      replaceUrl: true //prevents adding to browser history
+      replaceUrl: true
     });
   }
 

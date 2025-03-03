@@ -3,7 +3,7 @@
 
   <div class="container-fluid rounded shadow-sm p-3 my-3" style="background-color: #CFD8DC;">
     <div class="row d-flex align-items-center">
-      <div class="col fw-bold text-shadow" style="font-size: 20px; color: #424242;">MY BOOKINGS</div>
+      <div class="col offset-md-1 fw-bold text-shadow" style="font-size: 20px; color: #424242;">MY BOOKINGS</div>
       <div class="col">
         <div class="input-group">
           <button class="btn book-btn me-2 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
@@ -27,7 +27,7 @@
     <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
       <!-- Book-Menu Rows -->
       <div class="row d-flex align-items-center text-shadow py-2" style="font-size: 19px;">
-        <div class="col offset-md-1">
+        <div class="col-md-1 offset-md-1">
           ID
           <button class="btn btn-sm" type="button" (click)="sortById()">
             @if(idSort() === 'asc') {
@@ -43,7 +43,7 @@
         <div class="col">
           Image
         </div>
-        <div class="col">
+        <div class="col-md-2">
           Room
           <button class="btn btn-sm" type="button" (click)="sortByRoomName()">
             @if(roomNameSort() === 'asc') {
@@ -112,11 +112,11 @@
       <!-- Book Rows -->
       @for (b of filteredBooks | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track b.id) {
         <div class="row d-flex align-items-center py-1">
-          <div class="col offset-md-1">#{{ b.id > 99999 ? (b.id.toString() | slice:0:5) + '...' : b.id }}</div>
+          <div class="col-md-1 offset-md-1">#{{ b.id > 99999 ? (b.id.toString() | slice:0:5) + '...' : b.id }}</div>
           <div class="col">
             <img [src]="b.room.image" alt="img" loading="lazy">
           </div>
-          <div class="col">{{ b.room.name!.length > 8 ? (b.room.name | slice:0:8) + '...' : b.room.name }}</div>
+          <div class="col-md-2">{{ b.room.name }}</div>
           <div class="col">{{ b.bookFrom | date:'MMM d, y' }}</div>
           <div class="col">{{ b.bookTo | date:'MMM d, y' }}</div>
           <div class="col">{{ getTotalPrice(b) | number: '1.0-2' }} $</div>

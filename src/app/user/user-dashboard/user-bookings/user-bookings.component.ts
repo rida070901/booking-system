@@ -43,7 +43,7 @@ export class UserBookingsComponent implements OnInit{
   //pagination variables
   page: number = 1;
   itemsPerPage = signal<number>(5);
-  perPageOptions = [6, 9, 12, 15];
+  perPageOptions = [5, 9, 12, 15];
 
   ngOnInit() {
     this.loadBooks();
@@ -73,6 +73,11 @@ export class UserBookingsComponent implements OnInit{
 
   showRecentlyAdded() {
     this.filteredBooks = this.books.sort((a, b) => b.id - a.id);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
 
   onItemsPerPageChange(targetValue: string) {

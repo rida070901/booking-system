@@ -2,12 +2,20 @@
 
   <div class="container-fluid rounded shadow-sm p-3 my-3" style="background-color: #CFD8DC;">
     <div class="row d-flex align-items-center">
-      <div class="col">
-        <button class="btn btn-outline-secondary" (click)="openNewRoomModal()">+ New</button>
-        <button class="btn book-btn ms-2 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
+      <div class="col-md-3">
+        <button class="btn btn-outline-secondary" (click)="openNewRoomModal()">
+          @if (creatingNew()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } @else {
+            + New
+          }
+        </button>
+        <button class="btn book-btn ms-2 py-2 px-3" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
       </div>
-      <div class="col fw-bold text-shadow" style="font-size: 20px; color: #424242;">MANAGE ROOMS</div>
-      <div class="col">
+      <div class="col-md-5 fw-bold text-shadow text-center" style="font-size: 20px; color: #424242;">
+        MANAGE ROOMS for ' {{ guesthouseName() }} '
+      </div>
+      <div class="col-md-4">
         <div class="input-group">
           <button class="btn btn-outline-secondary">
             <i class="bi bi-search"></i>
@@ -27,9 +35,9 @@
   }
   @else {
     <div class="container-fluid bg-white rounded shadow-sm p-3 my-2">
-      <!-- Room-Menu Rows -->
+      <!-- Room-Menu Row -->
       <div class="row d-flex align-items-center text-shadow py-2" style="font-size: 19px;">
-        <div class="col offset-md-1">
+        <div class="col-md-1 offset-md-1">
           ID
           <button class="btn btn-sm" type="button" (click)="sortById()">
             @if(idSort() === 'asc') {
@@ -42,10 +50,10 @@
             }
           </button>
         </div>
-        <div class="col">
+        <div class="col-md-2">
           Image
         </div>
-        <div class="col">
+        <div class="col-md-2">
           Name
           <button class="btn btn-sm" type="button" (click)="sortByName()">
             @if(nameSort() === 'asc') {
@@ -58,23 +66,10 @@
             }
           </button>
         </div>
-        <div class="col">
-          Guesthouse
-          <button class="btn btn-sm" type="button" (click)="sortByGuesthouseId()">
-            @if(guesthouseIdSort() === 'asc') {
-              <i class="bi bi-arrow-down"></i>
-            }
-            @if (guesthouseIdSort() === 'desc'){
-              <i class="bi bi-arrow-up"></i>
-            } @else if(guesthouseIdSort() === null){
-              <i class="bi bi-arrow-down-up"></i>
-            }
-          </button>
-        </div>
-        <div class="col">
+        <div class="col-md-3">
           Description
         </div>
-        <div class="col">
+        <div class="col-md-1">
           Price
           <button class="btn btn-sm" type="button" (click)="sortByPrice()">
             @if(priceSort() === 'asc') {
@@ -97,14 +92,14 @@
       <!-- Room Rows -->
       @for (r of filteredRooms | paginate: { itemsPerPage: itemsPerPage(), currentPage: page }; track r.id) {
         <div class="row d-flex align-items-center py-1">
-          <div class="col offset-md-1">#{{ r.id > 99999 ? (r.id.toString() | slice:0:5) + '...' : r.id }}</div>
-          <div class="col">
+          <div class="col-md-1 offset-md-1">#{{ r.id > 99999 ? (r.id.toString() | slice:0:5) + '...' : r.id }}</div>
+          <div class="col-md-2">
             <img [src]="r.image" alt="img" >
           </div>
-          <div class="col">{{ r.name!.length > 10 ? (r.name | slice:0:10) + '...' : r.name }}</div>
-          <div class="col">{{ r.name!.length > 10 ? (r.name | slice:0:10) + '...' : r.name }}</div>
-          <div class="col">{{ r.description!.length > 15 ? (r.description | slice:0:15) + '...' : r.description }}</div>
-          <div class="col">{{ r.price }} $/day</div>
+          <div class="col-md-2">{{ r.name!.length > 20 ? (r.name | slice:0:20) + '...' : r.name }}</div>
+          <!-- <div class="col">{{ guesthouseName()!.length > 10 ? (guesthouseName() | slice:0:10) + '...' : guesthouseName() }}</div> -->
+          <div class="col-md-3">{{ r.description!.length > 40 ? (r.description | slice:0:40) + '...' : r.description }}</div>
+          <div class="col-md-1">{{ r.price }} $/day</div>
           <div class="col">
             <button class="btn btn-outline-success btn-sm rounded-circle" [disabled]="updatingId() === r.id" (click)="openEditModal(r)">
               @if (updatingId() === r.id) {

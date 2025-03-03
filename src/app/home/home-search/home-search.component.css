@@ -3,3 +3,18 @@
   color: #49545d;
   font-weight: bold;
 }
+
+.input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.input-group button {
+  background-color: white;
+  border: none;
+  padding: 5px 12px;
+  cursor: pointer;
+}

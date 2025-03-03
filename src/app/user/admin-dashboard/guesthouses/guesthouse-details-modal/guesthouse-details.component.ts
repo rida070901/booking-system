@@ -63,6 +63,7 @@ export class GuesthouseDetailsComponent implements OnInit{
   onSubmit(onNew: boolean) {
     if(this.guesthouseForm.invalid){
       console.log('INVALID FORM: form has empty or invalid fields');
+      this.guesthouseForm.markAllAsTouched();
       this.submitErrorMsg.set(true);
       return;
     }

@@ -3,7 +3,13 @@
   <div class="container-fluid rounded shadow-sm p-3 my-3" style="background-color: #CFD8DC;">
     <div class="row d-flex align-items-center">
       <div class="col">
-        <button class="btn btn-outline-secondary" (click)="openNewGuesthouseModal()">+ New</button>
+        <button class="btn btn-outline-secondary" (click)="openNewGuesthouseModal()">
+          @if (creatingNew()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } @else {
+            + New
+          }
+        </button>
         <button class="btn book-btn ms-2 px-4 py-2" (click)="showRecentlyAdded()"><i class="bi bi-sliders"></i> Recently added</button>
       </div>
       <div class="col fw-bold text-shadow" style="font-size: 20px; color: #424242;">MANAGE GUESTHOUSES</div>
