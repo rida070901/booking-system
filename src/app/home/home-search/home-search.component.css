@@ -6,7 +6,6 @@
 
 .input-group {
   display: flex;
-  align-items: center;
   border: 1px solid #ccc;
   border-radius: 5px;
   overflow: hidden;
