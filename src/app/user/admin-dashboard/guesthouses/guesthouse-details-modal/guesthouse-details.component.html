@@ -31,11 +31,11 @@
             <label for="name" class="form-label">Name: *</label>
             <input id="name" type="text" formControlName="name" class="form-control"
                    [class.is-invalid]="guesthouseForm.controls.name.invalid && guesthouseForm.controls.name.touched" />
-            @if(guesthouseForm.controls.name.invalid && guesthouseForm.controls.name.touched) {
+            @if(guesthouseForm.controls.name.touched) {
               <div class="text-danger small mt-1">
-                @if(guesthouseForm.controls.name.errors?.['required']) { <small>Name is required.</small> }
-                @if(guesthouseForm.controls.name.errors?.['minlength']) { <small>Min 3 characters required.</small> }
-                @if(guesthouseForm.controls.name.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+                @if(guesthouseForm.controls.name.hasError('required')) { <small>Name is required.</small> }
+                @if(guesthouseForm.controls.name.hasError('minlength')) { <small>Min 3 characters required.</small> }
+                @if(guesthouseForm.controls.name.hasError('maxlength')) { <small>Max 20 characters allowed.</small> }
               </div>
             }
           </div>
@@ -44,11 +44,11 @@
             <label for="description" class="form-label">Description: *</label>
             <textarea id="description" formControlName="description" class="form-control"
                       [class.is-invalid]="guesthouseForm.controls.description.invalid && guesthouseForm.controls.description.touched"></textarea>
-            @if(guesthouseForm.controls.description.invalid && guesthouseForm.controls.description.touched) {
+            @if(guesthouseForm.controls.description.touched) {
               <div class="text-danger small mt-1">
-                @if(guesthouseForm.controls.description.errors?.['required']) { <small>Description is required.</small> }
-                @if(guesthouseForm.controls.description.errors?.['minlength']) { <small>Min 10 characters required.</small> }
-                @if(guesthouseForm.controls.description.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+                @if(guesthouseForm.controls.description.hasError('required')) { <small>Description is required.</small> }
+                @if(guesthouseForm.controls.description.hasError('minlength')) { <small>Min 10 characters required.</small> }
+                @if(guesthouseForm.controls.description.hasError('maxlength')) { <small>Max 20 characters allowed.</small> }
               </div>
             }
           </div>

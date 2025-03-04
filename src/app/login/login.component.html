@@ -1,4 +1,4 @@
-<div class="modal-header border-0 pb-1">
+<div class="modal-header  pb-1">
   <h5 class="modal-title fw-semibold text-black">
     @if (isLoginMode()) { Login } @else { Register }
   </h5>
@@ -10,98 +10,117 @@
   <form [formGroup]="form">
     @if (!isLoginMode()) {
       <div class="mb-3">
-        <label class="form-label text-black small fw-normal">Username</label>
-        <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-               formControlName="username" placeholder="enter username">
-        @if (registerForm.controls.username.hasError('usernameTaken')) {
-          <div class="text-danger small mt-1">Username is not available.</div>
-        } @else if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
-          <div class="text-danger small mt-1">Username is required.</div>
-          @if(registerForm.controls.username.errors?.['minlength']) { <small>Min 3 characters required.</small> }
-          @if(registerForm.controls.username.errors?.['maxlength']) { <small>Max 20 characters allowed.</small> }
+        <label for="username" class="form-label small">Username</label>
+        <input type="text" formControlName="username" placeholder="enter username" class="form-control form-control-sm bg-light"
+               [class.is-invalid]="registerForm.controls.username.invalid && registerForm.controls.username.touched">
+        @if (registerForm.controls.username.touched) {
+          <div class="text-danger small mt-1">
+            @if(registerForm.controls.username.hasError('required')) { <small>Username is required.</small> }
+            @if(registerForm.controls.username.hasError('minlength')) { <small>Min 3 characters required.</small> }
+            @if(registerForm.controls.username.hasError('maxlength')) { <small>Max 20 characters allowed.</small> }
+            @if(registerForm.controls.username.hasError('usernameTaken')) { <small>Username is not available.</small> }
+          </div>
         }
       </div>
       <div class="row">
         <div class="col mb-3">
-          <label class="form-label text-black small">First Name</label>
-          <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black"
-                 formControlName="firstName" placeholder="enter first name">
-          @if (registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid) {
-            <div class="text-danger small mt-1">First name is required.</div>
-            @if(registerForm.controls.firstName.errors?.['minlength']) { <small>Min 2 characters required.</small> }
-            @if(registerForm.controls.firstName.errors?.['maxlength']) { <small>Max 50 characters allowed.</small> }
+          <label for="firstName" class="form-label small">First Name</label>
+          <input type="text" formControlName="firstName" placeholder="enter first name" class="form-control form-control-sm bg-light "
+                 [class.is-invalid]="registerForm.controls.firstName.invalid && registerForm.controls.firstName.touched">
+          @if (registerForm.controls.firstName.touched) {
+            <div class="text-danger small mt-1">
+              @if(registerForm.controls.firstName.hasError('required')) { <small>First name is required.</small> }
+              @if(registerForm.controls.firstName.hasError('minlength')) { <small>Min 2 characters required.</small> }
+              @if(registerForm.controls.firstName.hasError('maxlength')) { <small>Max 50 characters allowed.</small> }
+            </div>
           }
         </div>
         <div class="col mb-3">
-          <label class="form-label text-black small">Last Name</label>
-          <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black"
-                 formControlName="lastName" placeholder="enter last name">
-          @if (registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid) {
-            <div class="text-danger small mt-1">Last name is required.</div>
-            @if(registerForm.controls.lastName.errors?.['minlength']) { <small>Min 2 characters required.</small> }
-            @if(registerForm.controls.lastName.errors?.['maxlength']) { <small>Max 50 characters allowed.</small> }
+          <label for="lastName" class="form-label small">Last Name</label>
+          <input type="text" formControlName="lastName" placeholder="enter last name" class="form-control form-control-sm bg-light "
+                 [class.is-invalid]="registerForm.controls.lastName.invalid && registerForm.controls.lastName.touched">
+          @if (registerForm.controls.lastName.touched) {
+            <div class="text-danger small mt-1">
+              @if(registerForm.controls.lastName.hasError('required')) { <small>Last name is required.</small> }
+              @if(registerForm.controls.lastName.hasError('minlength')) { <small>Min 2 characters required.</small> }
+              @if(registerForm.controls.lastName.hasError('maxlength')) { <small>Max 50 characters allowed.</small> }
+            </div>
           }
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label text-black small">Phone Number</label>
-        <input type="text" class="form-control form-control-sm bg-light border-0 rounded-3 text-black"
-               formControlName="phoneNumber" placeholder="enter phone number">
-        @if (registerForm.controls.phoneNumber.hasError('pattern')) {
-          <div class="text-danger small mt-1">Enter a valid phone number.</div>
-        } @else if (registerForm.controls.phoneNumber.touched && registerForm.controls.phoneNumber.invalid) {
-          <div class="text-danger small mt-1">Phone number is required.</div>
+        <label for="phoneNumber" class="form-label small">Phone Number</label>
+        <input type="text" formControlName="phoneNumber" placeholder="enter phone number" class="form-control form-control-sm bg-light "
+               [class.is-invalid]="registerForm.controls.phoneNumber.invalid && registerForm.controls.phoneNumber.touched">
+        @if (registerForm.controls.phoneNumber.touched) {
+          <div class="text-danger small mt-1">
+            @if(registerForm.controls.phoneNumber.hasError('required')) { <small>Phone number is required.</small> }
+            @if(registerForm.controls.phoneNumber.hasError('pattern')) { <small>Enter a valid phone number.</small> }
+
+          </div>
+        }
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label small">Email</label>
+        <input type="email" formControlName="email" placeholder="enter email" class="form-control form-control-sm bg-light "
+               [class.is-invalid]="registerForm.controls.email.invalid && registerForm.controls.email.touched">
+        @if (registerForm.controls.email.touched) {
+          <div class="text-danger small mt-1">
+            @if(registerForm.controls.email.hasError('required')) { <small>Email is required.</small> }
+            @if(registerForm.controls.email.hasError('email')) { <small>Enter a valid email.</small> }
+            @if(registerForm.controls.email.hasError('emailTaken')) { <small>Email address is already in use.</small> }
+          </div>
+        }
+      </div>
+    }
+
+    @if(isLoginMode()) {
+      <div class="mb-3">
+        <label for="email" class="form-label small">Email</label>
+        <input type="email" formControlName="email" placeholder="enter email" class="form-control form-control-sm bg-light "
+               [class.is-invalid]="loginForm.controls.email.invalid && loginForm.controls.email.touched">
+        @if (loginForm.controls.email.touched) {
+          <div class="text-danger small mt-1">
+            @if(loginForm.controls.email.hasError('required')) { <small>Email is required.</small> }
+            @if(loginForm.controls.email.hasError('email')) { <small>Enter a valid email.</small> }
+          </div>
         }
       </div>
     }
 
     <div class="mb-3">
-      <label class="form-label text-black small fw-normal">Email</label>
-      <input type="email" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-             formControlName="email" placeholder="enter email">
-      @if ((form.controls.email.touched || form.controls.email.dirty || form.controls.email.errors) &&
-           form.controls.email.hasError('emailTaken')) {
-        <div class="text-danger small mt-1">Email address is already in use.</div>
-      } @else if (form.controls.email.touched && form.controls.email.invalid) {
-        <div class="text-danger small mt-1">Correct email is required.</div>
-      }
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label text-black small fw-normal">Password</label>
-      <input type="password" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-             formControlName="password" placeholder="enter password">
-
-      @if (form.controls.password.touched && form.controls.password.invalid) {
-        @if (isLoginMode()) {
-          <div class="text-danger small mt-1">Password is required.</div>
-        } @else {
+      <label for="password" class="form-label small">Password</label>
+      <input type="password" formControlName="password" placeholder="enter password" class="form-control form-control-sm bg-light "
+             [class.is-invalid]="registerForm.controls.password.invalid && registerForm.controls.password.touched">
+      @if (registerForm.controls.password.touched) {
           <div class="text-danger small mt-1">
-            Password must contain:
-            <ul class="mb-0">
-              <li>At least 1 uppercase letter (A-Z)</li>
-              <li>At least 1 lowercase letter (a-z)</li>
-              <li>At least 1 number (0-9)</li>
-              <li>At least 1 special character (e.g. #, $, !)</li>
-              <li>Minimum 6 characters</li>
-            </ul>
+            @if(registerForm.controls.password.hasError('required')) { <small>Password is required.</small> }
+            @if(registerForm.controls.password.hasError('pattern')) {
+              <small>Password must contain:
+                <ul class="mb-0">
+                  <li>At least 1 uppercase letter (A-Z)</li>
+                  <li>At least 1 lowercase letter (a-z)</li>
+                  <li>At least 1 number (0-9)</li>
+                  <li>At least 1 special character (e.g. #, $, !)</li>
+                  <li>Minimum 6 characters</li>
+                </ul>
+              </small> }
           </div>
-        }
       }
     </div>
 
     @if (!isLoginMode()) {
       <div class="mb-3">
-        <label class="form-label text-black small fw-normal">Confirm Password</label>
-        <input type="password" class="form-control form-control-sm bg-light border-0 rounded-3 text-black fw-normal"
-               formControlName="confirmPassword" placeholder="confirm password">
-               @if (registerForm.hasError('passwordsMismatch') && registerForm.get('confirmPassword')?.touched) {
-                <div class="text-danger small mt-1 mb-2">Passwords do not match.</div>
-              }
+        <label for="confirmPassword" class="form-label small">Confirm Password</label>
+        <input type="password" formControlName="confirmPassword" placeholder="confirm password" class="form-control form-control-sm bg-light "
+               [class.is-invalid]="registerForm.controls.confirmPassword.invalid && registerForm.controls.confirmPassword.touched">
+        @if (registerForm.controls.confirmPassword.touched && registerForm.hasError('passwordsMismatch')) {
+          <div class="text-danger small mt-1 mb-2">Passwords do not match.</div>
+        }
       </div>
     }
 
-    @if (loginForm.controls.password.hasError('invalidCredentials') && isLoginMode()) {
+    @if (isLoginMode() && loginForm.controls.password.hasError('invalidCredentials')) {
       <div class="text-danger small mt-1 mb-3">Invalid email or password.</div>
     }
 

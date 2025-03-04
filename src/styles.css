@@ -18,7 +18,7 @@ body {
 
 .modal-content {
   width: 100%;
-  max-width: 500px; /* You can adjust the width as needed */
+  max-width: 500px;
 }
 
 .toast-center-center {
